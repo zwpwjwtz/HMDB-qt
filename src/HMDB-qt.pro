@@ -29,18 +29,31 @@ SOURCES += \
         mainwindow.cpp \
     dialogimport.cpp \
     utils/hmdbxmlimporter.cpp \
-    utils/stdc.c
+    utils/stdc.c \
+    formquery.cpp \
+    utils/hmdbquery.cpp \
+    utils/hmdbsearch.cpp \
+    utils/hmdbrecordgenerator.cpp \
+    utils/filesystem.cpp
 
 HEADERS += \
         mainwindow.h \
     dialogimport.h \
     utils/hmdbxmlimporter.h \
     utils/hmdbxml_def.h \
-    utils/stdc.h
+    utils/stdc.h \
+    formquery.h \
+    utils/hmdbquery.h \
+    utils/hmdbquery_p.h \
+    utils/hmdbsearch.h \
+    utils/hmdbsearch_p.h \
+    utils/hmdbrecordgenerator.h \
+    utils/filesystem.h
 
 FORMS += \
         mainwindow.ui \
-    dialogimport.ui
+    dialogimport.ui \
+    formquery.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

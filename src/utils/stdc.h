@@ -7,6 +7,9 @@ extern "C" {
 
 typedef struct _IO_FILE FILE;
 
+// Like strstr, but search from the end of the HAYSTACK
+char* utils_rstrstr(const char* haystack, const char* needle);
+
 // Like strncpy, with a "\0" appended to the destination
 char* utils_strncpy (char* dest, const char* src, int count);
 

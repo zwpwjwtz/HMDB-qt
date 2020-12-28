@@ -17,6 +17,9 @@ public:
     explicit DialogImport(QWidget *parent = nullptr);
     ~DialogImport();
 
+signals:
+    void DirectoryChanged(QString newDir);
+
 protected:
     virtual void showEvent(QShowEvent* event);
 

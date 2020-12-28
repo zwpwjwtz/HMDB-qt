@@ -6,6 +6,21 @@
 #define UTILS_FILE_BUFFER_MAX   1024
 
 
+char* utils_rstrstr(const char* haystack, const char* needle)
+{
+    unsigned long hLength = strlen(haystack);
+    unsigned long nLength = strlen(needle);
+    if (nLength > hLength)
+        return NULL;
+
+    for (const char* p = haystack + hLength - nLength; p >= haystack; p--)
+    {
+        if (strncmp(p, needle, nLength))
+            return p;
+    }
+    return NULL;
+}
+
 char* utils_strncpy (char* dest, const char* src, int count)
 {
     dest[count] = '\0';

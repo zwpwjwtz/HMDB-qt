@@ -91,7 +91,7 @@ char* HmdbXMLImporter::getEntryID(const char* content)
     const char* pos1 = strstr(content, HMDBXML_LIST_ENTRY_ID_BEGIN);
     if (!pos1)
         return nullptr;
-    pos1 += strlen(HMDBXML_LIST_ENTRY_BEGIN);
+    pos1 += strlen(HMDBXML_LIST_ENTRY_BEGIN) - 1;
 
     const char* pos2 = strstr(pos1, HMDBXML_LIST_ENTRY_ID_END);
     if (!pos2 || pos2 < pos1)

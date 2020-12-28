@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "dialogimport.h"
+#include "formquery.h"
 
 
 namespace Ui {
@@ -18,11 +19,14 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
+    void on_buttonImport_clicked();
+    void on_buttonDownload_clicked();
+    void on_buttonQuery_clicked();
 
 private:
     Ui::MainWindow *ui;
     DialogImport windowImport;
+    FormQuery windowQuery;
 };
 
 #endif // MAINWINDOW_H

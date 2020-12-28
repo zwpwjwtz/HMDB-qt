@@ -16,9 +16,23 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="buttonDownload">
+      <property name="text">
+       <string>Download HMDB</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="buttonImport">
       <property name="text">
        <string>Import HMDB</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="buttonQuery">
+      <property name="text">
+       <string>Query HMDB</string>
       </property>
      </widget>
     </item>

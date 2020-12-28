@@ -34,9 +34,15 @@ void DialogImport::startImport()
 
     importer.setSourceXML(importXML.toLocal8Bit().constData());
     importer.setTargetDir(importDir.toLocal8Bit().constData());
-    importer.import();
+    if (!importer.import())
+    {
+        QMessageBox::critical(this, "Import failed",
+                              "An error occurred during import.");
+        return;
+    }
 
     ui->progressImport->setValue(100);
+    emit DirectoryChanged(importDir);
 }
 
 void DialogImport::on_buttonChooseFile_clicked()
