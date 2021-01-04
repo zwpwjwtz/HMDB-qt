@@ -34,11 +34,16 @@ private slots:
 private:
     Ui::FormQuery *ui;
 
+    bool resultLoaded;
+    QList<int> listColumnWidth;
     QString dataDir;
     HmdbQuery database;
     QStandardItemModel modelResult;
     
     void showQueryResult(const HmdbQueryRecord& record);
+
+    void saveColumnWidth();
+    void restoreColumnWidth();
 };
 
 #endif // FORMQUERY_H

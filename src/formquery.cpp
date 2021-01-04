@@ -16,6 +16,8 @@ FormQuery::FormQuery(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    resultLoaded = false;
+
     ui->viewSearchResult->setModel(&modelResult);
 }
 
@@ -52,6 +54,9 @@ void FormQuery::resizeEvent(QResizeEvent* event)
 
 void FormQuery::showQueryResult(const HmdbQueryRecord& record)
 {
+    if (resultLoaded)
+        saveColumnWidth();
+
     modelResult.clear();
     modelResult.setHorizontalHeaderLabels(QStringList() <<
                                           "ID" <<
@@ -75,6 +80,28 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record)
         }
         modelResult.appendRow(rowItems);
     }
+
+    // Resize each column when first loaded
+    if (!resultLoaded)
+    {
+        ui->viewSearchResult->resizeColumnsToContents();
+        resultLoaded = true;
+    }
+    else
+        restoreColumnWidth();
+}
+
+void FormQuery::saveColumnWidth()
+{
+    listColumnWidth.clear();
+    for (int i=0; i<modelResult.columnCount(); i++)
+        listColumnWidth.push_back(ui->viewSearchResult->columnWidth(i));
+}
+
+void FormQuery::restoreColumnWidth()
+{
+    for (int i=0; i<modelResult.columnCount(); i++)
+        ui->viewSearchResult->setColumnWidth(i, listColumnWidth[i]);
 }
 
 void FormQuery::on_comboBox_currentIndexChanged(int index)
