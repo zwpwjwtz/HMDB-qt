@@ -2,6 +2,7 @@
 #define HMDBSEARCH_H
 
 #include <vector>
+#include <string>
 
 
 class HmdbSearchPrivate;
@@ -14,7 +15,7 @@ public:
 
     void setDataDirectory(const char* dir);
 
-    std::vector<const char*> searchID(const char* pattern);
+    std::vector<std::string> searchID(const char* pattern);
 
 private:
     HmdbSearchPrivate* d_ptr;

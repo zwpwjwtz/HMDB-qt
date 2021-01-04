@@ -14,7 +14,7 @@ public:
     HmdbSearchPrivate(HmdbSearch* parent);
     ~HmdbSearchPrivate();
 
-    const char* getIDByFilename(const char* filename);
+    char* getIDByFilename(const char* filename);
 };
 
 #endif // HMDBSEARCH_PRIVATE_H

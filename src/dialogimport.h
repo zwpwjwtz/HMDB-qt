@@ -2,7 +2,7 @@
 #define DIALOGIMPORT_H
 
 #include <QWizard>
-#include "utils/hmdbxmlimporter.h"
+#include "hmdb/hmdbxmlimporter.h"
 
 
 namespace Ui {

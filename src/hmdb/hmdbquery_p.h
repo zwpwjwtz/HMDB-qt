@@ -2,6 +2,7 @@
 #define HMDBQUERY_P_H
 
 #include <vector>
+#include <string>
 #include "hmdbquery.h"
 #include "hmdbsearch.h"
 
@@ -13,7 +14,7 @@ public:
 
     char* dataDir;
     HmdbSearch searchEngine;
-    std::vector<const char*> queryPropertyList;
+    std::vector<std::string> queryPropertyList;
 
     HmdbQueryPrivate(HmdbQuery* parent);
     ~HmdbQueryPrivate();

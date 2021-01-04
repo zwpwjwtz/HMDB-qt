@@ -1,4 +1,3 @@
-#include <list>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -8,12 +7,12 @@
  #include "filesystem.h"
 
 
-std::vector<const char*> utils_listDirectoryFiles(const char* dir)
+std::list<std::string> utils_listDirectoryFiles(const char* dir)
 {
+    std::list<std::string> fileList;
     if (!dir)
-        return std::vector<const char*>();
+        return fileList;
 
-    std::list<const char*> fileList;
 #ifdef _WIN32
     char* pattern = new char[strlen(dir) + 4];
     strcpy(pattern, dir);
@@ -37,5 +36,5 @@ std::vector<const char*> utils_listDirectoryFiles(const char* dir)
     closedir(d);
 #endif
 
-    return std::vector<const char*>{ fileList.begin(), fileList.end() };
+    return fileList;
 }

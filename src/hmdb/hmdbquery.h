@@ -7,13 +7,19 @@ class HmdbQueryPrivate;
 struct HmdbQueryPropertyEntry
 {
     char* name;
+
+    HmdbQueryPropertyEntry();
+    ~HmdbQueryPropertyEntry();
 };
 
 struct HmdbQueryRecordEntry
 {
     char* ID;
-    int propertCount;
-    char* properties;
+    int propertyCount;
+    char** propertyValues;
+
+    HmdbQueryRecordEntry();
+    ~HmdbQueryRecordEntry();
 };
 
 struct HmdbQueryRecord
@@ -22,6 +28,9 @@ struct HmdbQueryRecord
     HmdbQueryPropertyEntry** properties;
     int entryCount;
     HmdbQueryRecordEntry** entries;
+
+    HmdbQueryRecord();
+    ~HmdbQueryRecord();
 };
 
 class HmdbQuery

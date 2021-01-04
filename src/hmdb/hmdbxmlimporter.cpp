@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include "hmdbxmlimporter.h"
 #include "hmdbxml_def.h"
-#include "stdc.h"
+#include "utils/stdc.h"
 
 
 HmdbXMLImporter::HmdbXMLImporter()

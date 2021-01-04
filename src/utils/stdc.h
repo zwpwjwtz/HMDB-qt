@@ -7,8 +7,15 @@ extern "C" {
 
 typedef struct _IO_FILE FILE;
 
+
+// Find the position of the first occurance of a substring in string
+int utils_strpos(const char* haystack, const char* needle);
+
 // Like strstr, but search from the end of the HAYSTACK
 char* utils_rstrstr(const char* haystack, const char* needle);
+
+// Like isspace, applicable to a whole string
+int utils_isspace(const char* str, int length);
 
 // Like strncpy, with a "\0" appended to the destination
 char* utils_strncpy (char* dest, const char* src, int count);
@@ -25,6 +32,13 @@ int utils_getdelim(char** __restrict lineptr,
                    int* __restrict n,
                    const char* __restrict delimiter,
                    FILE* __restrict stream);
+
+// Read N chars from STREAM, the go back to where we were
+// before the read
+int utils_fpeek(FILE* stream, char* buffer, int n);
+
+// Like Uconfig_freadCmp, but go back to where we were before the read
+int utils_fpeekCmp(FILE* stream, const char* string, int n);
 
 #if defined(__cplusplus)
 }

@@ -1,10 +1,11 @@
 #ifndef FILESYSTEM_H
 #define FILESYSTEM_H
 
-#include <vector>
+#include <list>
+#include <string>
 
 // List all files under a directory
-std::vector<const char*> utils_listDirectoryFiles(const char* dir);
+std::list<std::string> utils_listDirectoryFiles(const char* dir);
 
 
 #endif // FILESYSTEM_H

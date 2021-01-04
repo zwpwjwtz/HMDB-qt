@@ -69,9 +69,9 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record)
 
         rowItems.clear();
         rowItems.push_back(new QStandardItem(entry->ID));
-        for (j=0; j<entry->propertCount; j++)
+        for (j=0; j<entry->propertyCount; j++)
         {
-            rowItems.push_back(new QStandardItem(entry->properties[j]));
+            rowItems.push_back(new QStandardItem(entry->propertyValues[j]));
         }
         modelResult.appendRow(rowItems);
     }

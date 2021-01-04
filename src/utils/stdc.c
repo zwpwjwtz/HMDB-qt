@@ -6,6 +6,15 @@
 #define UTILS_FILE_BUFFER_MAX   1024
 
 
+int utils_strpos(const char* haystack, const char* needle)
+{
+    const char* pos = strstr(haystack, needle);
+    if (pos)
+        return (int)(pos - haystack);
+    else
+        return -1;
+}
+
 char* utils_rstrstr(const char* haystack, const char* needle)
 {
     unsigned long hLength = strlen(haystack);
@@ -19,6 +28,18 @@ char* utils_rstrstr(const char* haystack, const char* needle)
             return p;
     }
     return NULL;
+}
+
+int utils_isspace(const char* str, int length)
+{
+    while (length > 0)
+    {
+        str++;
+        if (isspace(*str) != 0)
+            break;
+        length--;
+    }
+    return length > 0;
 }
 
 char* utils_strncpy (char* dest, const char* src, int count)
@@ -153,4 +174,42 @@ int utils_getdelim(char** lineptr, int* n,
         return -1;
     else
         return p1 == *lineptr ? -1 : p1 - *lineptr;
+}
+
+int utils_fpeek(FILE* stream, char* buffer, int n)
+{
+    int readLength;
+    if (n >= 0)
+    {
+        readLength = fread(buffer, sizeof(char), n, stream);
+        fseek(stream, -readLength, SEEK_CUR);
+    }
+    else
+    {
+        long oldPos = ftell(stream);
+        fseek(stream, n, SEEK_CUR);
+        long newPos = ftell(stream);
+        readLength = -fread(buffer, sizeof(char), oldPos - newPos, stream);
+    }
+    return readLength;
+}
+
+int utils_fpeekCmp(FILE *stream, const char* string, int n)
+{
+    if (n == 0)
+    {
+        n = strlen(string);
+        if (n == 0)
+            return 0;
+    }
+
+    // Read stream by customized fpeek():
+    // the size parameter and the return value could be negative
+    char* buffer = malloc(sizeof(char) * abs(n));
+    int readLength = utils_fpeek(stream, buffer, n);
+    if (strncmp(buffer, string, abs(n)) != 0)
+        readLength = 0;
+
+    free(buffer);
+    return readLength;
 }

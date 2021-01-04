@@ -2,8 +2,8 @@
 #include <list>
 #include "hmdbsearch_p.h"
 #include "hmdbxml_def.h"
-#include "filesystem.h"
-#include "stdc.h"
+#include "utils/filesystem.h"
+#include "utils/stdc.h"
 
 
 HmdbSearch::HmdbSearch()
@@ -32,15 +32,20 @@ void HmdbSearch::setDataDirectory(const char* dir)
     }
 }
 
-std::vector<const char*> HmdbSearch::searchID(const char* pattern)
+std::vector<std::string> HmdbSearch::searchID(const char* pattern)
 {
     auto matchedFiles = utils_listDirectoryFiles(d_ptr->dataDir);
 
-    std::vector<const char*> matchedID;
-    for (unsigned long i=0; i<matchedFiles.size(); i++)
+    char* ID;
+    std::vector<std::string> matchedID;
+    for (auto i=matchedFiles.cbegin(); i!=matchedFiles.cend(); i++)
     {
-        if (strstr(matchedFiles[i], pattern))
-            matchedID.push_back(d_ptr->getIDByFilename(matchedFiles[i]));
+        if (strstr((*i).c_str(), pattern))
+        {
+            ID = d_ptr->getIDByFilename((*i).c_str());
+            matchedID.push_back(ID);
+            delete[] ID;
+        }
     }
     return matchedID;
 }
@@ -56,7 +61,7 @@ HmdbSearchPrivate::~HmdbSearchPrivate()
     delete dataDir;
 }
 
-const char* HmdbSearchPrivate::getIDByFilename(const char* filename)
+char* HmdbSearchPrivate::getIDByFilename(const char* filename)
 {
     const char* pos1 = strstr(filename, "/");
     if (!pos1)

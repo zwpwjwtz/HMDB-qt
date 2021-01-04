@@ -4,9 +4,54 @@
 #include "hmdbxml_def.h"
 
 
+HmdbQueryPropertyEntry::HmdbQueryPropertyEntry()
+{
+    name = nullptr;
+}
+
+HmdbQueryPropertyEntry::~HmdbQueryPropertyEntry()
+{
+    delete name;
+}
+
+HmdbQueryRecordEntry::HmdbQueryRecordEntry()
+{
+    ID = nullptr;
+    propertyCount = 0;
+    propertyValues = nullptr;
+}
+
+HmdbQueryRecordEntry::~HmdbQueryRecordEntry()
+{
+    delete ID;
+    for (int i=0; i<propertyCount; i++)
+        delete propertyValues[i];
+    delete[] propertyValues;
+}
+
+HmdbQueryRecord::HmdbQueryRecord()
+{
+    propertyCount = 0;
+    properties = nullptr;
+    entryCount = 0;
+    entries = nullptr;
+}
+
+HmdbQueryRecord::~HmdbQueryRecord()
+{
+    int i;
+    for (i=0; i<propertyCount; i++)
+        delete properties[i];
+    delete[] properties;
+    for (i=0; i<entryCount; i++)
+        delete entries[i];
+    delete[] entries;
+}
+
 HmdbQuery::HmdbQuery()
 {
     d_ptr = new HmdbQueryPrivate(this);
+    setDefaultQueryProperty();
 }
 
 HmdbQuery::~HmdbQuery()
@@ -49,7 +94,6 @@ void HmdbQuery::setDefaultQueryProperty()
 {
     auto& list = d_ptr->queryPropertyList;
     list.clear();
-    list.push_back(HMDBXML_ENTRY_PROP_ID);
     list.push_back(HMDBXML_ENTRY_PROP_NAME);
     list.push_back(HMDBXML_ENTRY_PROP_FORMULAR);
     list.push_back(HMDBXML_ENTRY_PROP_AVGMASS);

@@ -28,27 +28,37 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     dialogimport.cpp \
-    utils/hmdbxmlimporter.cpp \
+    hmdb/hmdbxmlimporter.cpp \
     utils/stdc.c \
     formquery.cpp \
-    utils/hmdbquery.cpp \
-    utils/hmdbsearch.cpp \
-    utils/hmdbrecordgenerator.cpp \
-    utils/filesystem.cpp
+    hmdb/hmdbquery.cpp \
+    hmdb/hmdbsearch.cpp \
+    hmdb/hmdbrecordgenerator.cpp \
+    utils/filesystem.cpp \
+    utils/uconfigentryobject.cpp \
+    utils/uconfigfile.cpp \
+    utils/uconfigio.cpp \
+    utils/uconfigxml.cpp
 
 HEADERS += \
         mainwindow.h \
     dialogimport.h \
-    utils/hmdbxmlimporter.h \
-    utils/hmdbxml_def.h \
+    hmdb/hmdbxmlimporter.h \
+    hmdb/hmdbxml_def.h \
     utils/stdc.h \
     formquery.h \
-    utils/hmdbquery.h \
-    utils/hmdbquery_p.h \
-    utils/hmdbsearch.h \
-    utils/hmdbsearch_p.h \
-    utils/hmdbrecordgenerator.h \
-    utils/filesystem.h
+    hmdb/hmdbquery.h \
+    hmdb/hmdbquery_p.h \
+    hmdb/hmdbsearch.h \
+    hmdb/hmdbsearch_p.h \
+    hmdb/hmdbrecordgenerator.h \
+    utils/filesystem.h \
+    utils/uconfigxml.h \
+    utils/uconfigentry.h \
+    utils/uconfigentryobject.h \
+    utils/uconfigfile.h \
+    utils/uconfigio.h \
+    utils/uconfigxml_p.h
 
 FORMS += \
         mainwindow.ui \

@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QStandardItemModel>
-#include "utils/hmdbquery.h"
+#include "hmdb/hmdbquery.h"
 
 
 namespace Ui {
