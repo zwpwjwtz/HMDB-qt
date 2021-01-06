@@ -11,7 +11,7 @@ HmdbQueryPropertyEntry::HmdbQueryPropertyEntry()
 
 HmdbQueryPropertyEntry::~HmdbQueryPropertyEntry()
 {
-    delete name;
+    delete[] name;
 }
 
 HmdbQueryRecordEntry::HmdbQueryRecordEntry()
@@ -72,7 +72,6 @@ void HmdbQuery::setDataDirectory(const char* dir)
         oldDir = new char[strlen(dir) + 1];
         strcpy(oldDir, dir);
     }
-    d_ptr->searchEngine.setDataDirectory(dir);
 }
 
 
@@ -90,6 +89,22 @@ void HmdbQuery::setQueryProperty(const char** properties, int propertyCount)
     }
 }
 
+void HmdbQuery::getReady()
+{
+    HmdbQueryID searchID(d_ptr->dataDir);
+    searchID.buildIndex();
+
+    HmdbQueryMass searchMass(d_ptr->dataDir);
+    searchMass.buildIndex();
+}
+
+bool HmdbQuery::isReady()
+{
+    HmdbQueryID searchID(d_ptr->dataDir);
+    HmdbQueryMass searchMass(d_ptr->dataDir);
+    return searchID.existIndex() && searchMass.existIndex();
+}
+
 void HmdbQuery::setDefaultQueryProperty()
 {
     auto& list = d_ptr->queryPropertyList;
@@ -102,10 +117,47 @@ void HmdbQuery::setDefaultQueryProperty()
 
 HmdbQueryRecord HmdbQuery::queryID(const char* ID)
 {
-    auto matchedID = d_ptr->searchEngine.searchID(ID);
+    HmdbQueryID searchEngine(d_ptr->dataDir);
+    HmdbQueryIDConditions conditions;
+    HmdbQueryIndexRecord result;
+    conditions.pattern = ID;
+    if (!searchEngine.query(conditions, result))
+        return HmdbQueryRecord();
 
     return HmdbRecordGenerator::getRecordByID(d_ptr->dataDir,
-                                              matchedID,
+                                              result.IDList,
+                                              d_ptr->queryPropertyList);
+}
+
+HmdbQueryRecord HmdbQuery::queryMass(double min, double max)
+{
+    HmdbQueryMass searchEngine(d_ptr->dataDir);
+    HmdbQueryMassConditions conditions;
+    HmdbQueryIndexRecord result;
+    conditions.minMZ = min;
+    conditions.maxMZ = max;
+    conditions.monoisotopic = false;
+    if (!searchEngine.query(conditions, result))
+        return HmdbQueryRecord();
+
+    return HmdbRecordGenerator::getRecordByID(d_ptr->dataDir,
+                                              result.IDList,
+                                              d_ptr->queryPropertyList);
+}
+
+HmdbQueryRecord HmdbQuery::queryMonoMass(double min, double max)
+{
+    HmdbQueryMass searchEngine(d_ptr->dataDir);
+    HmdbQueryMassConditions conditions;
+    HmdbQueryIndexRecord result;
+    conditions.minMZ = min;
+    conditions.maxMZ = max;
+    conditions.monoisotopic = true;
+    if (!searchEngine.query(conditions, result))
+        return HmdbQueryRecord();
+
+    return HmdbRecordGenerator::getRecordByID(d_ptr->dataDir,
+                                              result.IDList,
                                               d_ptr->queryPropertyList);
 }
 
@@ -117,5 +169,5 @@ HmdbQueryPrivate::HmdbQueryPrivate(HmdbQuery* parent)
 
 HmdbQueryPrivate::~HmdbQueryPrivate()
 {
-    delete dataDir;
+    delete[] dataDir;
 }

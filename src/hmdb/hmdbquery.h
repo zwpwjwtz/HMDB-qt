@@ -43,7 +43,12 @@ public:
     void setQueryProperty(const char** properties, int propertyCount);
     void setDefaultQueryProperty();
 
+    void getReady();
+    bool isReady();
+
     HmdbQueryRecord queryID(const char* ID);
+    HmdbQueryRecord queryMass(double min, double max);
+    HmdbQueryRecord queryMonoMass(double min, double max);
     
 private:
     HmdbQueryPrivate* d_ptr;

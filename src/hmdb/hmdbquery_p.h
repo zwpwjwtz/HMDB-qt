@@ -4,7 +4,8 @@
 #include <vector>
 #include <string>
 #include "hmdbquery.h"
-#include "hmdbsearch.h"
+#include "hmdbqueryid.h"
+#include "hmdbquerymass.h"
 
 
 class HmdbQueryPrivate
@@ -13,7 +14,6 @@ public:
     HmdbQuery* q_ptr;
 
     char* dataDir;
-    HmdbSearch searchEngine;
     std::vector<std::string> queryPropertyList;
 
     HmdbQueryPrivate(HmdbQuery* parent);

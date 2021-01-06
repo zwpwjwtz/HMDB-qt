@@ -141,7 +141,8 @@ int utils_getdelim(char** lineptr, int* n,
             }
             strncpy(p1, buffer, pos - buffer);
             p1 += pos - buffer;
-            fseek(stream, pos - buffer - readLength, SEEK_CUR);
+            fseek(stream, pos - buffer + delimiterLength - readLength,
+                  SEEK_CUR);
             break;
         }
 

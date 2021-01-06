@@ -38,7 +38,10 @@ SOURCES += \
     utils/uconfigentryobject.cpp \
     utils/uconfigfile.cpp \
     utils/uconfigio.cpp \
-    utils/uconfigxml.cpp
+    utils/uconfigxml.cpp \
+    hmdb/hmdbqueryid.cpp \
+    hmdb/hmdbquerymass.cpp \
+    hmdb/hmdbqueryindex.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -58,7 +61,10 @@ HEADERS += \
     utils/uconfigentryobject.h \
     utils/uconfigfile.h \
     utils/uconfigio.h \
-    utils/uconfigxml_p.h
+    utils/uconfigxml_p.h \
+    hmdb/hmdbqueryindex.h \
+    hmdb/hmdbqueryid.h \
+    hmdb/hmdbquerymass.h
 
 FORMS += \
         mainwindow.ui \

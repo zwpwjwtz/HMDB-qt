@@ -7,7 +7,6 @@
 #define HMDB_QUERY_TYPE_ID        1
 #define HMDB_QUERY_TYPE_NAME      2
 #define HMDB_QUERY_TYPE_MASS      3
-#define HMDB_QUERY_TYPE_MONOMASS  4
 
 
 FormQuery::FormQuery(QWidget *parent) :
@@ -37,7 +36,16 @@ bool FormQuery::checkDatabase()
         on_buttonSetDatabase_clicked();
         return false;
     }
-    return true;
+    if (!database.isReady())
+    {
+        if (QMessageBox::question(this, "Database not indexed",
+                                  "The index for HMDB has not been built yet. \n"
+                                  "Do you want to build it now?")
+                != QMessageBox::Yes)
+            return false;
+        database.getReady();
+    }
+    return database.isReady();
 }
 
 void FormQuery::setDataDirectory(QString dir)
@@ -49,7 +57,7 @@ void FormQuery::setDataDirectory(QString dir)
 
 void FormQuery::resizeEvent(QResizeEvent* event)
 {
-    ui->horizontalLayoutWidget->setGeometry(0, 0, width(), height());
+    ui->horizontalLayout->setGeometry(QRect(0, 0, width(), height()));
 }
 
 void FormQuery::showQueryResult(const HmdbQueryRecord& record)
@@ -125,4 +133,48 @@ void FormQuery::on_buttonQueryID_clicked()
     
     showQueryResult(database.queryID(
                         ui->textQueryID->text().toLocal8Bit().constData()));
+}
+
+void FormQuery::on_checkRelativeTolerance_stateChanged(int arg1)
+{
+    if (ui->checkRelativeTolerance->isChecked())
+        ui->labelMassToleranceUnit->setText("(ppm)");
+    else
+        ui->labelMassToleranceUnit->setText("(Da)");
+}
+
+void FormQuery::on_buttonQueryMass_clicked()
+{
+    if (!checkDatabase())
+        return;
+
+    bool conversionOK;
+    double mass = ui->textMass->text().toDouble(&conversionOK);
+    if (!conversionOK)
+    {
+        QMessageBox::warning(this, "Invalid mass value",
+                             "Please input a numeric mass value!");
+        return;
+    }
+
+    double delta = ui->textMassTolerance->text().toDouble(&conversionOK);
+    if (!conversionOK)
+    {
+        QMessageBox::warning(this, "Invalid tolerance value",
+                             "Please input a numeric tolerance value!");
+        return;
+    }
+    if (ui->checkRelativeTolerance->isChecked())
+    {
+        // Convert "Da" to "ppm"
+        delta = abs(mass * delta * 1E-6);
+    }
+
+    double min = mass - delta;
+    double max = mass + delta;
+    if (ui->radioAvgMass->isChecked())
+        showQueryResult(database.queryMass(min, max));
+    else
+        showQueryResult(database.queryMonoMass(min, max));
+
 }

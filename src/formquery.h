@@ -30,6 +30,8 @@ private slots:
     void on_comboBox_currentIndexChanged(int index);
     void on_buttonQueryID_clicked();
     void on_buttonSetDatabase_clicked();
+    void on_checkRelativeTolerance_stateChanged(int arg1);
+    void on_buttonQueryMass_clicked();
 
 private:
     Ui::FormQuery *ui;
