@@ -1,5 +1,5 @@
-#ifndef HMDBQUERYID_H
-#define HMDBQUERYID_H
+#ifndef HmdbQueryID_H
+#define HmdbQueryID_H
 
 #include "hmdbqueryindex.h"
 
@@ -29,4 +29,4 @@ private:
     char* indexFileName;
 };
 
-#endif // HMDBQUERYID_H
+#endif // HmdbQueryID_H

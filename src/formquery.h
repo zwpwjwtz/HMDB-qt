@@ -32,6 +32,7 @@ private slots:
     void on_buttonSetDatabase_clicked();
     void on_checkRelativeTolerance_stateChanged(int arg1);
     void on_buttonQueryMass_clicked();
+    void on_buttonQueryName_clicked();
 
 private:
     Ui::FormQuery *ui;

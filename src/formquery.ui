@@ -102,7 +102,33 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="pageOptionName"/>
+           <widget class="QWidget" name="pageOptionName">
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QLineEdit" name="textQueryName"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="buttonQueryName">
+               <property name="text">
+                <string>Go</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
            <widget class="QWidget" name="pageOptionMass">
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>

@@ -41,7 +41,8 @@ SOURCES += \
     utils/uconfigxml.cpp \
     hmdb/hmdbqueryid.cpp \
     hmdb/hmdbquerymass.cpp \
-    hmdb/hmdbqueryindex.cpp
+    hmdb/hmdbqueryindex.cpp \
+    hmdb/hmdbqueryname.cpp
 
 HEADERS += \
         mainwindow.h \

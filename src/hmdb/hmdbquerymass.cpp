@@ -196,6 +196,7 @@ bool HmdbQueryMass::getMass(const char* filename,
     UconfigKeyObject* dataKeys;
 
     // Get the averaged mass
+    char* massValue;
     UconfigEntryObject dataEntry =
         dataFile.rootEntry.searchSubentry(HMDBXML_ENTRY_PROP_AVGMASS,
                                           nullptr,
@@ -207,7 +208,11 @@ bool HmdbQueryMass::getMass(const char* filename,
         if (dataSubentries->keyCount() > 0)
         {
             dataKeys = dataSubentries[0].keys();
-            averageMass = atof(dataKeys[0].value());
+            massValue = new char[dataKeys[0].valueSize() + 1];
+            utils_strncpy(massValue,
+                          dataKeys[0].value(),
+                          dataKeys[0].valueSize());
+            averageMass = atof(massValue);
             delete[] dataKeys;
         }
         delete[] dataSubentries;

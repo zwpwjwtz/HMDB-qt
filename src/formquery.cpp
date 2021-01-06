@@ -57,6 +57,7 @@ void FormQuery::setDataDirectory(QString dir)
 
 void FormQuery::resizeEvent(QResizeEvent* event)
 {
+    Q_UNUSED(event)
     ui->horizontalLayout->setGeometry(QRect(0, 0, width(), height()));
 }
 
@@ -128,6 +129,9 @@ void FormQuery::on_buttonSetDatabase_clicked()
 
 void FormQuery::on_buttonQueryID_clicked()
 {
+    if (ui->textQueryID->text().isEmpty())
+        return;
+
     if (!checkDatabase())
         return;
     
@@ -137,6 +141,7 @@ void FormQuery::on_buttonQueryID_clicked()
 
 void FormQuery::on_checkRelativeTolerance_stateChanged(int arg1)
 {
+    Q_UNUSED(arg1)
     if (ui->checkRelativeTolerance->isChecked())
         ui->labelMassToleranceUnit->setText("(ppm)");
     else
@@ -177,4 +182,16 @@ void FormQuery::on_buttonQueryMass_clicked()
     else
         showQueryResult(database.queryMonoMass(min, max));
 
+}
+
+void FormQuery::on_buttonQueryName_clicked()
+{
+    if (ui->textQueryName->text().isEmpty())
+        return;
+
+    if (!checkDatabase())
+        return;
+
+    showQueryResult(database.queryName(
+                        ui->textQueryName->text().toLocal8Bit().constData()));
 }

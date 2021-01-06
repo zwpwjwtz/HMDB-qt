@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,6 +47,22 @@ char* utils_strncpy (char* dest, const char* src, int count)
 {
     dest[count] = '\0';
     return strncpy(dest, src, count);
+}
+
+char* utils_tolower(const char* str, int length)
+{
+    char* dest = malloc(sizeof(char) * length);
+    if (!dest)
+        return NULL;
+
+    char* p = dest;
+    while (length > 0)
+    {
+        *(p++) = tolower(*(str++));
+        length--;
+    }
+
+    return dest;
 }
 
 int utils_fseekstr(const char* delimiter, FILE* stream)
@@ -139,7 +156,7 @@ int utils_getdelim(char** lineptr, int* n,
                 *lineptr = newBuffer;
                 bufferSize = newBufferSize;
             }
-            strncpy(p1, buffer, pos - buffer);
+            utils_strncpy(p1, buffer, pos - buffer);
             p1 += pos - buffer;
             fseek(stream, pos - buffer + delimiterLength - readLength,
                   SEEK_CUR);
@@ -152,8 +169,7 @@ int utils_getdelim(char** lineptr, int* n,
             if (n != NULL && *n > 0)
             {
                 // Size limited by caller; stop reading
-                strncpy(p1, buffer, p2 - p1 - 1);
-                *p2 = '\0';
+                utils_strncpy(p1, buffer, p2 - p1 - 1);
                 return p2 - *lineptr;
             }
 
@@ -166,7 +182,7 @@ int utils_getdelim(char** lineptr, int* n,
             *lineptr = newBuffer;
             bufferSize = newBufferSize;
         }
-        strncpy(p1, buffer, readLength - delimiterLength);
+        utils_strncpy(p1, buffer, readLength - delimiterLength);
         p1 += readLength - delimiterLength;
         fseek(stream, -delimiterLength, SEEK_CUR);
     }

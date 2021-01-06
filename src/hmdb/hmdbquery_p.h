@@ -4,8 +4,6 @@
 #include <vector>
 #include <string>
 #include "hmdbquery.h"
-#include "hmdbqueryid.h"
-#include "hmdbquerymass.h"
 
 
 class HmdbQueryPrivate

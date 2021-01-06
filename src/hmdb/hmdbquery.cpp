@@ -2,6 +2,9 @@
 #include "hmdbquery_p.h"
 #include "hmdbrecordgenerator.h"
 #include "hmdbxml_def.h"
+#include "hmdbqueryid.h"
+#include "hmdbquerymass.h"
+#include "hmdbqueryname.h"
 
 
 HmdbQueryPropertyEntry::HmdbQueryPropertyEntry()
@@ -92,17 +95,26 @@ void HmdbQuery::setQueryProperty(const char** properties, int propertyCount)
 void HmdbQuery::getReady()
 {
     HmdbQueryID searchID(d_ptr->dataDir);
-    searchID.buildIndex();
+    if (!searchID.existIndex())
+        searchID.buildIndex();
 
     HmdbQueryMass searchMass(d_ptr->dataDir);
-    searchMass.buildIndex();
+    if (!searchMass.existIndex())
+        searchMass.buildIndex();
+
+    HmdbQueryName searchName(d_ptr->dataDir);
+    if (!searchName.existIndex())
+        searchName.buildIndex();
 }
 
 bool HmdbQuery::isReady()
 {
     HmdbQueryID searchID(d_ptr->dataDir);
     HmdbQueryMass searchMass(d_ptr->dataDir);
-    return searchID.existIndex() && searchMass.existIndex();
+    HmdbQueryName searchName(d_ptr->dataDir);
+    return searchID.existIndex() &&
+           searchMass.existIndex() &&
+           searchName.existIndex();
 }
 
 void HmdbQuery::setDefaultQueryProperty()
@@ -153,6 +165,20 @@ HmdbQueryRecord HmdbQuery::queryMonoMass(double min, double max)
     conditions.minMZ = min;
     conditions.maxMZ = max;
     conditions.monoisotopic = true;
+    if (!searchEngine.query(conditions, result))
+        return HmdbQueryRecord();
+
+    return HmdbRecordGenerator::getRecordByID(d_ptr->dataDir,
+                                              result.IDList,
+                                              d_ptr->queryPropertyList);
+}
+
+HmdbQueryRecord HmdbQuery::queryName(const char* name)
+{
+    HmdbQueryName searchEngine(d_ptr->dataDir);
+    HmdbQueryNameConditions conditions;
+    HmdbQueryIndexRecord result;
+    conditions.pattern = name;
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();
 

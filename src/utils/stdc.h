@@ -20,6 +20,9 @@ int utils_isspace(const char* str, int length);
 // Like strncpy, with a "\0" appended to the destination
 char* utils_strncpy (char* dest, const char* src, int count);
 
+// Like tolower(), but deal with a string
+char* utils_tolower(const char* str, int length);
+
 // Like fseek, seek forward until a DELIMITER appears in the stream
 // Return the number of bytes skipped.
 int utils_fseekstr(const char* delimiter, FILE* stream);

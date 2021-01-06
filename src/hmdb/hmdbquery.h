@@ -49,6 +49,7 @@ public:
     HmdbQueryRecord queryID(const char* ID);
     HmdbQueryRecord queryMass(double min, double max);
     HmdbQueryRecord queryMonoMass(double min, double max);
+    HmdbQueryRecord queryName(const char* name);
     
 private:
     HmdbQueryPrivate* d_ptr;
