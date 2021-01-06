@@ -36,7 +36,18 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QPushButton" name="buttonBatchQuery">
+      <property name="text">
+       <string>Batch Query</string>
+      </property>
+     </widget>
+    </item>
    </layout>
+   <zorder>buttonBatchQuery</zorder>
+   <zorder>buttonDownload</zorder>
+   <zorder>buttonImport</zorder>
+   <zorder>buttonQuery</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

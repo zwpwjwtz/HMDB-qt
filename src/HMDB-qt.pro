@@ -32,7 +32,6 @@ SOURCES += \
     utils/stdc.c \
     formquery.cpp \
     hmdb/hmdbquery.cpp \
-    hmdb/hmdbsearch.cpp \
     hmdb/hmdbrecordgenerator.cpp \
     utils/filesystem.cpp \
     utils/uconfigentryobject.cpp \
@@ -42,7 +41,8 @@ SOURCES += \
     hmdb/hmdbqueryid.cpp \
     hmdb/hmdbquerymass.cpp \
     hmdb/hmdbqueryindex.cpp \
-    hmdb/hmdbqueryname.cpp
+    hmdb/hmdbqueryname.cpp \
+    dialogbatchquery.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -53,8 +53,6 @@ HEADERS += \
     formquery.h \
     hmdb/hmdbquery.h \
     hmdb/hmdbquery_p.h \
-    hmdb/hmdbsearch.h \
-    hmdb/hmdbsearch_p.h \
     hmdb/hmdbrecordgenerator.h \
     utils/filesystem.h \
     utils/uconfigxml.h \
@@ -65,14 +63,19 @@ HEADERS += \
     utils/uconfigxml_p.h \
     hmdb/hmdbqueryindex.h \
     hmdb/hmdbqueryid.h \
-    hmdb/hmdbquerymass.h
+    hmdb/hmdbquerymass.h \
+    dialogbatchquery.h
 
 FORMS += \
         mainwindow.ui \
     dialogimport.ui \
-    formquery.ui
+    formquery.ui \
+    dialogbatchquery.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resource.qrc

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "dialogimport.h"
 #include "formquery.h"
+#include "dialogbatchquery.h"
 
 
 namespace Ui {
@@ -22,11 +23,13 @@ private slots:
     void on_buttonImport_clicked();
     void on_buttonDownload_clicked();
     void on_buttonQuery_clicked();
+    void on_buttonBatchQuery_clicked();
 
 private:
     Ui::MainWindow *ui;
     DialogImport windowImport;
     FormQuery windowQuery;
+    DialogBatchQuery windowBatchQuery;
 };
 
 #endif // MAINWINDOW_H

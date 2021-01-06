@@ -1,0 +1,11 @@
+Name,ID,Default
+ID,accession,Y
+Name,name,Y
+Formula,chemical_formula,Y
+Mass,average_molecular_weight,Y
+Monoisotopic Mass,monisotopic_molecular_weight,Y
+Status,status,Y
+CAS Number,cas_registry_number,N
+IUPAC Name,iupac_name,N
+SMILES,smiles,N
+InChI,inchi,N

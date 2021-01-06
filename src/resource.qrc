@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resource/MassModification-negative.csv</file>
+        <file>resource/HMDB-Fields.csv</file>
+    </qresource>
+</RCC>
