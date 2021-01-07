@@ -92,7 +92,7 @@ void UconfigKeyObject::setName(const char* name, int size)
     UconfigKey& data = refData ? *refData : propData;
 
     if (data.name)
-        delete data.name;
+        delete[] data.name;
 
     if (name)
     {
@@ -142,7 +142,7 @@ void UconfigKeyObject::setValue(const char* value, int size)
     UconfigKey& data = refData ? *refData : propData;
 
     if (data.value)
-        delete data.value;
+        delete[] data.value;
 
     if (value && size > 0)
     {
@@ -305,7 +305,7 @@ void UconfigEntryObject::setName(const char* name, int size)
     UconfigEntry& data = refData ? *refData : propData;
 
     if (data.name)
-        delete data.name;
+        delete[] data.name;
 
     if (name)
     {
@@ -448,7 +448,7 @@ bool UconfigEntryObject::deleteKey(const char* keyName, int nameSize)
 
     // Update the key list for the entry
     if (entry.keys)
-        delete entry.keys;
+        delete[] entry.keys;
     entry.keys = newKeyList;
     entry.keyCount--;
 
@@ -617,7 +617,7 @@ bool UconfigEntryObject::deleteSubentry(const char* entryName, int nameSize)
 
     // Update the list for the parent
     if (entry.subentries)
-        delete entry.subentries;
+        delete[] entry.subentries;
     entry.subentries = newEntryList;
     entry.subentryCount--;
 

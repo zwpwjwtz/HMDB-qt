@@ -4,6 +4,8 @@
 #include "dialogbatchquery.h"
 #include "ui_dialogbatchquery.h"
 #include "hmdb/hmdbxml_def.h"
+#include "hmdb/hmdbbatchquery.h"
+#include "hmdb/hmdbqueryoptions.h"
 
 #define HMDB_BATCH_TARGET_SUFFIX        "_QueryResult"
 
@@ -23,6 +25,15 @@ DialogBatchQuery::DialogBatchQuery(QWidget *parent) :
     ui->viewQueryFields->setModel(&modelQueryFields);
     ui->viewQueryFields->horizontalHeader()
                             ->setSectionResizeMode(QHeaderView::Stretch);
+
+    searchEngine = nullptr;
+    lastQuerySuccessful = false;
+}
+
+void DialogBatchQuery::setDataDirectory(QString dir)
+{
+    dataDir = dir;
+    ui->textDatabase->setText(dataDir);
 }
 
 DialogBatchQuery::~DialogBatchQuery()
@@ -40,7 +51,15 @@ bool DialogBatchQuery::validateCurrentPage()
 {
     switch (currentId())
     {
-        case 1: // Select data files
+        case PageQueryType:
+            if (ui->textDatabase->text().isEmpty())
+            {
+                QMessageBox::warning(this, "Missing database",
+                                     "Please select a database for query.");
+                return false;
+            }
+            break;
+        case PageSelectFile:
             if (ui->textSourcePath->text().isEmpty() ||
                 ui->textTargetPath->text().isEmpty())
             {
@@ -50,7 +69,7 @@ bool DialogBatchQuery::validateCurrentPage()
                 return false;
             }
             break;
-        case 3:
+        case PageQueryField:
         {
             int checkedRowCount = 0;
             for (int i=0; i<modelQueryFields.rowCount(); i++)
@@ -76,10 +95,11 @@ void DialogBatchQuery::resetMassModification()
 {
     QStandardItemModel& model = modelMassModification;
     model.clear();
-    model.setColumnCount(3);
-    model.setHorizontalHeaderItem(0, new QStandardItem("Mass"));
-    model.setHorizontalHeaderItem(1, new QStandardItem("Formula"));
-    model.setHorizontalHeaderItem(2, new QStandardItem("Description"));
+    model.setColumnCount(4);
+    model.setHorizontalHeaderItem(0, new QStandardItem("Enabled"));
+    model.setHorizontalHeaderItem(1, new QStandardItem("Mass"));
+    model.setHorizontalHeaderItem(2, new QStandardItem("Formula"));
+    model.setHorizontalHeaderItem(3, new QStandardItem("Description"));
 
     // Define some default fields
     QFile resource(":/resource/MassModification-negative.csv");
@@ -99,6 +119,7 @@ void DialogBatchQuery::resetMassModification()
             continue;
 
         // Insert this field
+        row.push_back(new QStandardItem());
         row.push_back(new QStandardItem(QString(properties[0])));
         row.push_back(new QStandardItem(QString(properties[1])));
         row.push_back(new QStandardItem(QString(properties[2])));
@@ -114,9 +135,10 @@ void DialogBatchQuery::resetQueryFields()
 {
     QStandardItemModel& model = modelQueryFields;
     model.clear();
-    model.setColumnCount(2);
-    model.setHorizontalHeaderItem(0, new QStandardItem("Field Name"));
-    model.setHorizontalHeaderItem(1, new QStandardItem("Field ID"));
+    model.setColumnCount(3);
+    model.setHorizontalHeaderItem(0, new QStandardItem("Enabled"));
+    model.setHorizontalHeaderItem(1, new QStandardItem("Field Name"));
+    model.setHorizontalHeaderItem(2, new QStandardItem("Field ID"));
 
     // Define some default fields
     QFile resource(":/resource/HMDB-Fields.csv");
@@ -136,6 +158,7 @@ void DialogBatchQuery::resetQueryFields()
             continue;
 
         // Insert this field
+        row.push_back(new QStandardItem());
         row.push_back(new QStandardItem(QString(properties[0])));
         row.push_back(new QStandardItem(QString(properties[1])));
         row[0]->setCheckable(true);
@@ -144,6 +167,99 @@ void DialogBatchQuery::resetQueryFields()
         model.appendRow(row);
         row.clear();
     }
+}
+
+bool DialogBatchQuery::launchQuery()
+{
+    if (!searchEngine)
+        searchEngine = new HmdbBatchQuery;
+    else
+    {
+        if (searchEngine->status() == HmdbQueryStatus::Working)
+            searchEngine->stopQuery();
+    }
+    searchEngine->setDataDirectory(dataDir.toLocal8Bit().constData());
+    searchEngine->setSourcePath(
+                ui->textSourcePath->text().toLocal8Bit().constData());
+    searchEngine->setResultPath(
+                ui->textTargetPath->text().toLocal8Bit().constData());
+
+    // Load query properties
+    int i;
+    QStringList queryFields;
+    for (i=0; i<modelQueryFields.rowCount(); i++)
+    {
+        if (modelQueryFields.item(i, 0)->checkState() == Qt::Checked)
+        {
+            queryFields.push_back(
+                        modelQueryFields.item(i, 2)->text());
+        }
+    }
+    char** queryProperties = new char*[queryFields.length()];
+    for (i=0; i<queryFields.length(); i++)
+    {
+        queryProperties[i] = new char[queryFields[i].length() + 1];
+        strcpy(queryProperties[i], queryFields[i].toLocal8Bit().constData());
+    }
+    searchEngine->setQueryProperty(queryProperties, queryFields.length());
+    for (i=0; i<queryFields.length(); i++)
+        delete[] queryProperties[i];
+    delete[] queryProperties;
+
+    switch(ui->comboQueryType->currentIndex())
+    {
+        case 0: // Query by Mass
+        {
+            bool conversionOK;
+            ui->textMassTolerance->text().toDouble(&conversionOK);
+            if (!conversionOK)
+            {
+                QMessageBox::warning(this, "Invalid mass tolerance value",
+                                     "Please input a numeric value for the "
+                                     "mass tolerance.");
+                return false;
+            }
+
+            // Load options to our search engine
+            searchEngine->clearOptions();
+            if (ui->radioMonoMass->isChecked())
+                searchEngine->setOption(HMDB_QUERY_OPTION_MASS_MONOISOTOPIC);
+            if (ui->checkRelativeMassTolerance->isChecked())
+                searchEngine->setOption(HMDB_QUERY_OPTION_MASS_RELATIVE_TOL);
+            searchEngine->setOption(HMDB_QUERY_OPTION_MASS_TOLERANCE,
+                       ui->textMassTolerance->text().toLocal8Bit().constData());
+
+            // More options (mass modification types)
+            QStringList massModification, massModificationNames;
+            for (i=0; i<modelMassModification.rowCount(); i++)
+            {
+                if (modelMassModification.item(i, 0)->checkState() ==
+                    Qt::Checked)
+                {
+                    massModification.push_back(
+                                modelMassModification.item(i, 1)->text());
+                    massModificationNames.push_back(
+                                modelMassModification.item(i, 2)->text());
+                }
+            }
+            searchEngine->setOption(HMDB_QUERY_OPTION_MASS_MODIFICATION,
+                           massModification.join(HMDB_QUERY_OPTION_FIELD_SEP)
+                                           .toLocal8Bit().constData());
+            searchEngine->setOption(HMDB_QUERY_OPTION_MASS_MOD_NAME,
+                        massModificationNames.join(HMDB_QUERY_OPTION_FIELD_SEP)
+                                             .toLocal8Bit().constData());
+
+            lastQuerySuccessful = searchEngine->queryMass();
+            break;
+        }
+        default:;
+    }
+    return true;
+}
+
+void DialogBatchQuery::onBatchQueryProgressed()
+{
+    next();
 }
 
 void DialogBatchQuery::on_buttonSelectSourcePath_clicked()
@@ -182,4 +298,33 @@ void DialogBatchQuery::on_buttonSelectTargetPath_clicked()
 void DialogBatchQuery::on_buttonViewResult_clicked()
 {
     QDesktopServices::openUrl(ui->textTargetPath->text().prepend("file:///"));
+}
+
+void DialogBatchQuery::on_DialogBatchQuery_currentIdChanged(int id)
+{
+    switch (id)
+    {
+        case PageQueryProgress:
+            if (!launchQuery())
+                back();
+            else
+                next();
+            break;
+        case PageQueryFinished:
+            if (lastQuerySuccessful)
+                ui->labelQueryResult->setText("Query completed successfully.");
+            else
+                ui->labelQueryResult->setText("Something went wrong.");
+            break;
+        default:;
+    }
+}
+
+void DialogBatchQuery::on_buttonSelectDatabase_clicked()
+{
+    QString newDir = QFileDialog::getExistingDirectory(this,
+                                              "Select a database directory",
+                                              dataDir);
+    if (!newDir.isEmpty())
+        setDataDirectory(newDir);
 }

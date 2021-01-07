@@ -14,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&windowImport, &DialogImport::DirectoryChanged,
             &windowQuery,  &FormQuery::setDataDirectory);
+    connect(&windowImport, &DialogImport::DirectoryChanged,
+            &windowBatchQuery,  &DialogBatchQuery::setDataDirectory);
 }
 
 MainWindow::~MainWindow()

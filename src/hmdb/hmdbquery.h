@@ -9,7 +9,10 @@ struct HmdbQueryPropertyEntry
     char* name;
 
     HmdbQueryPropertyEntry();
+    HmdbQueryPropertyEntry(const HmdbQueryPropertyEntry& src);
     ~HmdbQueryPropertyEntry();
+
+    HmdbQueryPropertyEntry& operator= (const HmdbQueryPropertyEntry& src);
 };
 
 struct HmdbQueryRecordEntry
@@ -19,7 +22,10 @@ struct HmdbQueryRecordEntry
     char** propertyValues;
 
     HmdbQueryRecordEntry();
+    HmdbQueryRecordEntry(const HmdbQueryRecordEntry& src);
     ~HmdbQueryRecordEntry();
+
+    HmdbQueryRecordEntry& operator= (const HmdbQueryRecordEntry& src);
 };
 
 struct HmdbQueryRecord
@@ -31,6 +37,8 @@ struct HmdbQueryRecord
 
     HmdbQueryRecord();
     ~HmdbQueryRecord();
+
+    HmdbQueryRecord& operator= (const HmdbQueryRecord& src);
 };
 
 class HmdbQuery
@@ -40,7 +48,7 @@ public:
     ~HmdbQuery();
     
     void setDataDirectory(const char* dir);
-    void setQueryProperty(const char** properties, int propertyCount);
+    void setQueryProperty(char** properties, int propertyCount);
     void setDefaultQueryProperty();
 
     void getReady();
@@ -51,8 +59,9 @@ public:
     HmdbQueryRecord queryMonoMass(double min, double max);
     HmdbQueryRecord queryName(const char* name);
     
-private:
+protected:
     HmdbQueryPrivate* d_ptr;
+    HmdbQuery(HmdbQueryPrivate* data);
 };
 
 #endif // HMDBQUERY_H

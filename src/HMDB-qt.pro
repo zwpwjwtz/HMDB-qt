@@ -42,7 +42,8 @@ SOURCES += \
     hmdb/hmdbquerymass.cpp \
     hmdb/hmdbqueryindex.cpp \
     hmdb/hmdbqueryname.cpp \
-    dialogbatchquery.cpp
+    dialogbatchquery.cpp \
+    hmdb/hmdbbatchquery.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -64,7 +65,10 @@ HEADERS += \
     hmdb/hmdbqueryindex.h \
     hmdb/hmdbqueryid.h \
     hmdb/hmdbquerymass.h \
-    dialogbatchquery.h
+    dialogbatchquery.h \
+    hmdb/hmdbbatchquery.h \
+    hmdb/hmdbbatchquery_p.h \
+    hmdb/hmdbqueryoptions.h
 
 FORMS += \
         mainwindow.ui \

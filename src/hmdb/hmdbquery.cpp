@@ -12,9 +12,36 @@ HmdbQueryPropertyEntry::HmdbQueryPropertyEntry()
     name = nullptr;
 }
 
+HmdbQueryPropertyEntry::
+HmdbQueryPropertyEntry(const HmdbQueryPropertyEntry& src)
+{
+    if (src.name)
+    {
+        name = new char[strlen(src.name) + 1];
+        strcpy(name, src.name);
+    }
+    else
+        name = nullptr;
+}
+
 HmdbQueryPropertyEntry::~HmdbQueryPropertyEntry()
 {
     delete[] name;
+}
+
+HmdbQueryPropertyEntry&
+HmdbQueryPropertyEntry::operator= (const HmdbQueryPropertyEntry& src)
+{
+    if (name)
+        delete[] name;
+    if (src.name)
+    {
+        name = new char[strlen(src.name) + 1];
+        strcpy(name, src.name);
+    }
+    else
+        name = nullptr;
+    return *this;
 }
 
 HmdbQueryRecordEntry::HmdbQueryRecordEntry()
@@ -24,12 +51,74 @@ HmdbQueryRecordEntry::HmdbQueryRecordEntry()
     propertyValues = nullptr;
 }
 
+HmdbQueryRecordEntry::HmdbQueryRecordEntry(const HmdbQueryRecordEntry& src)
+{
+    if (src.ID)
+    {
+        ID = new char[strlen(src.ID) + 1];
+        strcpy(ID, src.ID);
+    }
+    else
+        ID = nullptr;
+
+    propertyCount = src.propertyCount;
+    propertyValues = new char*[propertyCount];
+    for (int i=0; i<propertyCount; i++)
+    {
+        if (src.propertyValues[i])
+        {
+            propertyValues[i] = new char[strlen(src.propertyValues[i]) + 1];
+            strcpy(propertyValues[i], src.propertyValues[i]);
+        }
+        else
+            propertyValues[i] = nullptr;
+    }
+}
+
 HmdbQueryRecordEntry::~HmdbQueryRecordEntry()
 {
-    delete ID;
-    for (int i=0; i<propertyCount; i++)
-        delete propertyValues[i];
-    delete[] propertyValues;
+    delete[] ID;
+    if (propertyValues)
+    {
+        for (int i=0; i<propertyCount; i++)
+            delete[] propertyValues[i];
+        delete[] propertyValues;
+    }
+}
+
+HmdbQueryRecordEntry&
+HmdbQueryRecordEntry:: operator= (const HmdbQueryRecordEntry& src)
+{
+    if (ID)
+        delete[] ID;
+    if (src.ID)
+    {
+        ID = new char[strlen(src.ID) + 1];
+        strcpy(ID, src.ID);
+    }
+    else
+        ID = nullptr;
+
+    int i;
+    if (propertyValues)
+    {
+        for (i=0; i<propertyCount; i++)
+            delete[] propertyValues[i];
+        delete[] propertyValues;
+    }
+    propertyCount = src.propertyCount;
+    propertyValues = new char*[propertyCount];
+    for (i=0; i<propertyCount; i++)
+    {
+        if (src.propertyValues[i])
+        {
+            propertyValues[i] = new char[strlen(src.propertyValues[i]) + 1];
+            strcpy(propertyValues[i], src.propertyValues[i]);
+        }
+        else
+            propertyValues[i] = nullptr;
+    }
+    return *this;
 }
 
 HmdbQueryRecord::HmdbQueryRecord()
@@ -51,9 +140,43 @@ HmdbQueryRecord::~HmdbQueryRecord()
     delete[] entries;
 }
 
+HmdbQueryRecord& HmdbQueryRecord::operator=(const HmdbQueryRecord& src)
+{
+    int i;
+    if (properties)
+    {
+        for (i=0; i<propertyCount; i++)
+            delete properties[i];
+        delete[] properties;
+    }
+    propertyCount = src.propertyCount;
+    properties = new HmdbQueryPropertyEntry*[propertyCount];
+    for (i=0; i<propertyCount; i++)
+        properties[i] = new HmdbQueryPropertyEntry(*src.properties[i]);
+
+    if (entries)
+    {
+        for (i=0; i<entryCount; i++)
+            delete entries[i];
+        delete[] entries;
+    }
+    entryCount = src.entryCount;
+    entries = new HmdbQueryRecordEntry*[entryCount];
+    for (i=0; i<entryCount; i++)
+        entries[i] = new HmdbQueryRecordEntry(*src.entries[i]);
+
+    return *this;
+}
+
 HmdbQuery::HmdbQuery()
 {
     d_ptr = new HmdbQueryPrivate(this);
+    setDefaultQueryProperty();
+}
+
+HmdbQuery::HmdbQuery(HmdbQueryPrivate* data)
+{
+    d_ptr = data;
     setDefaultQueryProperty();
 }
 
@@ -78,7 +201,7 @@ void HmdbQuery::setDataDirectory(const char* dir)
 }
 
 
-void HmdbQuery::setQueryProperty(const char** properties, int propertyCount)
+void HmdbQuery::setQueryProperty(char** properties, int propertyCount)
 {
     if (propertyCount < 0)
         return;
@@ -196,4 +319,37 @@ HmdbQueryPrivate::HmdbQueryPrivate(HmdbQuery* parent)
 HmdbQueryPrivate::~HmdbQueryPrivate()
 {
     delete[] dataDir;
+}
+
+const char* HmdbQueryPrivate::getPropertyValue(const HmdbQueryRecord& record,
+                                               const char* ID,
+                                               const char* propertyName)
+{
+    if (record.entryCount <= 0 || record.propertyCount <= 0)
+        return nullptr;
+
+    int i;
+    int propertyIndex = -1;
+    for (i=0; i<record.propertyCount; i++)
+    {
+        if (strcmp(record.properties[i]->name, propertyName) == 0)
+        {
+            propertyIndex = i;
+            break;
+        }
+    }
+    if (propertyIndex == -1)
+    {
+        // No property of given name
+        return nullptr;
+    }
+
+    for (i=0; i<record.entryCount; i++)
+    {
+        if (strcmp(ID, record.entries[i]->ID) == 0)
+            return record.entries[i]->propertyValues[propertyIndex];
+    }
+
+    // No entry of given ID
+    return nullptr;
 }
