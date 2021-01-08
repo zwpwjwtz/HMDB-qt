@@ -113,6 +113,7 @@ bool HmdbBatchQuery::queryMass()
     // Read the source data (CSV file) line by line,
     // and write each query result one by one
     int i, j, k;
+    int matchedCount;
     double mass, modification, matchedMass, difference;
     double delta = atof(getOption(HMDB_QUERY_OPTION_MASS_TOLERANCE));
     bool relativeDelta = existOption(HMDB_QUERY_OPTION_MASS_RELATIVE_TOL);
@@ -149,22 +150,24 @@ bool HmdbBatchQuery::queryMass()
 
         // Calculate a mass range for each type of modification,
         // then make queries separately
+        matchedCount = 0;
         for (i=0; i<modificationList.size(); i++)
         {
             indexQueryResult.IDList.clear();
             modification = atof(modificationList[i].c_str());
             if (relativeDelta)
             {
-                conditions.minMZ = mass + modification - mass * delta * 1E-6;
-                conditions.maxMZ = mass + modification + mass * delta * 1E-6;
+                conditions.minMZ = mass - modification - mass * delta * 1E-6;
+                conditions.maxMZ = mass - modification + mass * delta * 1E-6;
             }
             else
             {
-                conditions.minMZ = mass + modification - delta;
-                conditions.maxMZ = mass + modification + delta;
+                conditions.minMZ = mass - modification - delta;
+                conditions.maxMZ = mass - modification + delta;
             }
 
-            if (searchEngine.query(conditions, indexQueryResult))
+            if (searchEngine.query(conditions, indexQueryResult) &&
+                indexQueryResult.IDList.size() > 0)
             {
                 fullQueryResult = HmdbRecordGenerator::getRecordByID(d->dataDir,
                                                        indexQueryResult.IDList,
@@ -186,14 +189,17 @@ bool HmdbBatchQuery::queryMass()
                     matchedMassValue = d->getPropertyValue(fullQueryResult,
                                                 fullQueryResult.entries[j]->ID,
                                                 queryMassField);
-                    matchedMass = strtod(matchedMassValue,
-                                         &matchedMassValueEnd);
-                    if (matchedMassValueEnd != matchedMassValue)
+                    if (matchedMassValue)
                     {
-                        difference = matchedMass - modification - mass;
-                        if (relativeDelta)
-                            difference = difference * 1E6 / mass;
-                        fprintf(targetFile, "%lf", difference);
+                        matchedMass = strtod(matchedMassValue,
+                                             &matchedMassValueEnd);
+                        if (matchedMassValueEnd != matchedMassValue)
+                        {
+                            difference = matchedMass + modification - mass;
+                            if (relativeDelta)
+                                difference = difference * 1E6 / mass;
+                            fprintf(targetFile, "%lf", difference);
+                        }
                     }
 
                     // Append properties as columns
@@ -207,10 +213,11 @@ bool HmdbBatchQuery::queryMass()
                                   targetFile);
                     }
                     fputs(HMDB_BATCH_RESULT_RECORD_SEP, targetFile);
+                    matchedCount++;
                 }
             }
         }
-        if (indexQueryResult.IDList.size() == 0)
+        if (matchedCount == 0)
         {
             // All attempts failed; write a empty line
             fwrite(buffer, massValueEnd - buffer, 1, targetFile);

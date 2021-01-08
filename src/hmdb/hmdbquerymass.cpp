@@ -166,7 +166,7 @@ bool HmdbQueryMass::query(const HmdbQueryMassConditions& criteria,
                    HMDB_QUERY_INDEX_MASS_MASS_SIZE);
 
         // Compare with the required mass range
-        if (mass >= criteria.minMZ && mass <= criteria.maxMZ)
+        if (mass > 0 && mass >= criteria.minMZ && mass <= criteria.maxMZ)
         {
             matchedID.push_back(
                         std::string(buffer, HMDB_QUERY_INDEX_MASS_ID_SIZE));

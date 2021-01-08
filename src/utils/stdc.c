@@ -1,4 +1,3 @@
-#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,12 +34,14 @@ int utils_isspace(const char* str, int length)
 {
     while (length > 0)
     {
-        str++;
-        if (isspace(*str) != 0)
+        if (*str != ' ' || *str != '\0' ||
+            *str != '\t' || *str != '\v'  ||
+            *str != '\n' || *str != '\r' || *str != '\f')
             break;
+        str++;
         length--;
     }
-    return length > 0;
+    return length == 0;
 }
 
 char* utils_strncpy (char* dest, const char* src, int count)
