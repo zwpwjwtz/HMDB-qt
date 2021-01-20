@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-typedef struct _IO_FILE FILE;
-
 
 // Find the position of the first occurance of a substring in string
 int utils_strpos(const char* haystack, const char* needle);

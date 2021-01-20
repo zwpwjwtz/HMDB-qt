@@ -22,9 +22,10 @@ char* utils_rstrstr(const char* haystack, const char* needle)
     if (nLength > hLength)
         return NULL;
 
-    for (const char* p = haystack + hLength - nLength; p >= haystack; p--)
+    const char* p;
+    for (p = haystack + hLength - nLength; p >= haystack; p--)
     {
-        if (strncmp(p, needle, nLength))
+        if (strncmp(p, needle, nLength) == 0)
             return p;
     }
     return NULL;
@@ -96,6 +97,11 @@ int utils_fseekstr(const char* delimiter, FILE* stream)
 
     if (readLength > 0)
         return count;
+    else
+    {
+        fseek(stream, -count, SEEK_CUR);
+        return 0;
+    }
 }
 
 int utils_getdelim(char** lineptr, int* n,

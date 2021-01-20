@@ -1,5 +1,6 @@
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
 #include "hmdbqueryid.h"
 #include "hmdbxml_def.h"
 #include "utils/filesystem.h"
@@ -119,7 +120,6 @@ bool HmdbQueryID::query(const HmdbQueryIDConditions& criteria,
     fseek(f, HMDB_QUERY_INDEX_ID_HEADERSIZE, SEEK_CUR);
     while (!feof(f))
     {
-        free(buffer);
         readLength = utils_getdelim(&buffer, nullptr,
                                     HMDB_QUERY_INDEX_ID_SEP_ENTRY, f);
         if (readLength <= 0)
@@ -127,12 +127,14 @@ bool HmdbQueryID::query(const HmdbQueryIDConditions& criteria,
 
         if (strstr(buffer, criteria.pattern))
             matchedID.push_back(std::string(buffer, readLength));
+        free(buffer);
+        buffer = nullptr;
     }
     result.IDList.reserve(matchedID.size());
     result.IDList.insert(result.IDList.cend(),
                          matchedID.cbegin(), matchedID.cend());
     result.status = HMDB_QUERY_INDEX_STATUS_SUCCESS;
-    delete[] buffer;
+    free(buffer);
     fclose(f);
     return true;
 }

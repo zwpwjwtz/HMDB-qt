@@ -35,7 +35,8 @@
 #define UCONFIG_IO_XML_DELIMITER_DOCTYPE_BEGIN  "<!DOCTYPE "
 #define UCONFIG_IO_XML_DELIMITER_DOCTYPE_END    ">"
 
-#define UCONFIG_IO_XML_BUFFER_MIN               8
+#define UCONFIG_IO_XML_BUFFER_MAX               1024
+
 
 
 bool UconfigXML::readUconfig(const char* filename, UconfigFile* config)
@@ -166,7 +167,7 @@ bool UconfigXMLKey::parseValue(const char* expression, int length)
 int UconfigXMLKey::fwriteValue(FILE* file, bool forceWrappingQuotes)
 {
     int length = 0;
-    char* buffer = NULL;
+    char buffer[UCONFIG_IO_XML_BUFFER_MAX];
 
     if (ValueType(type()) == ValueType::Chars)
         forceWrappingQuotes = true;
@@ -181,15 +182,15 @@ int UconfigXMLKey::fwriteValue(FILE* file, bool forceWrappingQuotes)
     switch (ValueType(type()))
     {
         case ValueType::Integer:
-            length = asprintf(&buffer, "%d", *(int*)(value()));
+            length = snprintf(buffer, UCONFIG_IO_XML_BUFFER_MAX, "%d", *(int*)(value()));
             fwrite(buffer, length, sizeof(char), file);
             break;
         case ValueType::Float:
-            length = asprintf(&buffer, "%f", *(float*)(value()));
+            length = snprintf(buffer, UCONFIG_IO_XML_BUFFER_MAX, "%f", *(float*)(value()));
             fwrite(buffer, length, sizeof(char), file);
             break;
         case ValueType::Double:
-            length = asprintf(&buffer, "%f", *(double*)(value()));
+            length = snprintf(buffer, UCONFIG_IO_XML_BUFFER_MAX, "%f", *(double*)(value()));
             fwrite(buffer, length, sizeof(char), file);
             break;
         case ValueType::Chars:
@@ -204,9 +205,6 @@ int UconfigXMLKey::fwriteValue(FILE* file, bool forceWrappingQuotes)
         fputc(UCONFIG_IO_XML_CHAR_STRING, file);
         length++;
     }
-
-    if (buffer)
-        free(buffer);
 
     return length;
 }

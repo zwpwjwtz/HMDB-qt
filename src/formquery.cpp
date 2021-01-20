@@ -80,6 +80,11 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record)
     for (i=0; i<record.entryCount; i++)
     {
         entry = record.entries[i];
+        if (!entry)
+        {
+            // Invalid record entry; skip it
+            continue;
+        }
 
         rowItems.clear();
         rowItems.push_back(new QStandardItem(entry->ID));
