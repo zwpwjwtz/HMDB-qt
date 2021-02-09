@@ -2,6 +2,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include "dialogbatchquery.h"
+#include "widgets/controlmassmodificationlist.h"
 #include "ui_dialogbatchquery.h"
 #include "hmdb/hmdbxml_def.h"
 #include "hmdb/hmdbbatchquery.h"
@@ -16,16 +17,14 @@ DialogBatchQuery::DialogBatchQuery(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    resetMassModification();
     resetQueryFields();
 
-    ui->viewMassModification->setModel(&modelMassModification);
-    ui->viewMassModification->horizontalHeader()
-                            ->setSectionResizeMode(QHeaderView::Stretch);
     ui->viewQueryFields->setModel(&modelQueryFields);
     ui->viewQueryFields->horizontalHeader()
                             ->setSectionResizeMode(QHeaderView::Stretch);
 
+    massModificationList = new ControlMassModificationList();
+    ui->frameMassModification->addWidget(massModificationList);
     searchEngine = nullptr;
     lastQuerySuccessful = false;
 }
@@ -38,7 +37,9 @@ void DialogBatchQuery::setDataDirectory(QString dir)
 
 DialogBatchQuery::~DialogBatchQuery()
 {
+    delete massModificationList;
     delete ui;
+    delete searchEngine;
 }
 
 void DialogBatchQuery::hideEvent(QHideEvent* event)
@@ -89,46 +90,6 @@ bool DialogBatchQuery::validateCurrentPage()
         default:;
     }
     return true;
-}
-
-void DialogBatchQuery::resetMassModification()
-{
-    QStandardItemModel& model = modelMassModification;
-    model.clear();
-    model.setColumnCount(4);
-    model.setHorizontalHeaderItem(0, new QStandardItem("Enabled"));
-    model.setHorizontalHeaderItem(1, new QStandardItem("Mass"));
-    model.setHorizontalHeaderItem(2, new QStandardItem("Formula"));
-    model.setHorizontalHeaderItem(3, new QStandardItem("Description"));
-
-    // Define some default fields
-    QFile resource(":/resource/MassModification-negative.csv");
-    if (!resource.open(QFile::ReadOnly))
-        return;
-
-    QByteArray buffer;
-    QList<QByteArray> properties;
-    QList<QStandardItem*> row;
-    resource.readLine();  // Skip the header line
-    while(!resource.atEnd())
-    {
-        buffer = resource.readLine();
-        buffer.truncate(buffer.lastIndexOf('\n'));
-        properties = buffer.split(',');
-        if (properties.length() == 0)
-            continue;
-
-        // Insert this field
-        row.push_back(new QStandardItem());
-        row.push_back(new QStandardItem(QString(properties[0])));
-        row.push_back(new QStandardItem(QString(properties[1])));
-        row.push_back(new QStandardItem(QString(properties[2])));
-        row[0]->setCheckable(true);
-        model.appendRow(row);
-        if (properties[3] == "0")
-            row[0]->setCheckState(Qt::Checked);
-        row.clear();
-    }
 }
 
 void DialogBatchQuery::resetQueryFields()
@@ -230,17 +191,13 @@ bool DialogBatchQuery::launchQuery()
                        ui->textMassTolerance->text().toLocal8Bit().constData());
 
             // More options (mass modification types)
+            QList<int> indexList = massModificationList->selectedIndexes();
             QStringList massModification, massModificationNames;
-            for (i=0; i<modelMassModification.rowCount(); i++)
+            for (i=0; i<indexList.length(); i++)
             {
-                if (modelMassModification.item(i, 0)->checkState() ==
-                    Qt::Checked)
-                {
-                    massModification.push_back(
-                                modelMassModification.item(i, 1)->text());
-                    massModificationNames.push_back(
-                                modelMassModification.item(i, 2)->text());
-                }
+                massModification.push_back(massModificationList->mz(i));
+                massModificationNames.push_back(
+                                            massModificationList->formula(i));
             }
             searchEngine->setOption(HMDB_QUERY_OPTION_MASS_MODIFICATION,
                            massModification.join(HMDB_QUERY_OPTION_FIELD_SEP)

@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>resource/MassModification-negative.csv</file>
         <file>resource/HMDB-Fields.csv</file>
+        <file>icons/document-open.png</file>
+        <file>icons/document-save-as.png</file>
+        <file>resource/MassModification-positive.csv</file>
     </qresource>
 </RCC>

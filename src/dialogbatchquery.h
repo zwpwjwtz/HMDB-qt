@@ -6,6 +6,7 @@
 
 
 class HmdbBatchQuery;
+class ControlMassModificationList;
 
 namespace Ui {
 class DialogBatchQuery;
@@ -47,13 +48,12 @@ private slots:
 
 private:
     Ui::DialogBatchQuery *ui;
-    QStandardItemModel modelMassModification;
+    ControlMassModificationList* massModificationList;
     QStandardItemModel modelQueryFields;
     HmdbBatchQuery* searchEngine;
     bool lastQuerySuccessful;
     QString dataDir;
 
-    void resetMassModification();
     void resetQueryFields();
 
     bool launchQuery();

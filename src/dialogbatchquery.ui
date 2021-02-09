@@ -209,11 +209,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTableView" name="viewMassModification">
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-         </widget>
+         <layout class="QHBoxLayout" name="frameMassModification"/>
         </item>
        </layout>
       </widget>

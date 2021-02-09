@@ -43,7 +43,8 @@ SOURCES += \
     hmdb/hmdbqueryindex.cpp \
     hmdb/hmdbqueryname.cpp \
     dialogbatchquery.cpp \
-    hmdb/hmdbbatchquery.cpp
+    hmdb/hmdbbatchquery.cpp \
+    widgets/controlmassmodificationlist.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -68,13 +69,15 @@ HEADERS += \
     dialogbatchquery.h \
     hmdb/hmdbbatchquery.h \
     hmdb/hmdbbatchquery_p.h \
-    hmdb/hmdbqueryoptions.h
+    hmdb/hmdbqueryoptions.h \
+    widgets/controlmassmodificationlist.h
 
 FORMS += \
         mainwindow.ui \
     dialogimport.ui \
     formquery.ui \
-    dialogbatchquery.ui
+    dialogbatchquery.ui \
+    widgets/controlmassmodificationlist.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
