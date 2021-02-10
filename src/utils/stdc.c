@@ -151,13 +151,17 @@ int utils_getdelim(char** lineptr, int* n,
                     // Size limited by caller; stop reading
                     strncpy(p1, buffer, p2 - p1 - 1);
                     *p2 = '\0';
-                    return p2 - *lineptr;
+                    p1 = p2;
+                    break;
                 }
 
                 newBufferSize = bufferSize * 2;
                 newBuffer = (char*)(realloc(*lineptr, newBufferSize));
                 if (newBuffer == NULL)
-                    return -1;
+                {
+                    readLength = 0;
+                    break;
+                }
                 p1 += newBuffer - *lineptr;
                 p2 = newBuffer + newBufferSize;
                 *lineptr = newBuffer;
@@ -177,13 +181,17 @@ int utils_getdelim(char** lineptr, int* n,
             {
                 // Size limited by caller; stop reading
                 utils_strncpy(p1, buffer, p2 - p1 - 1);
-                return p2 - *lineptr;
+                p1 = p2;
+                break;
             }
 
             newBufferSize = bufferSize * 2;
             newBuffer = (char*)(realloc(*lineptr, newBufferSize));
             if (newBuffer == NULL)
-                return -1;
+            {
+                readLength = 0;
+                break;
+            }
             p1 += newBuffer - *lineptr;
             p2 = newBuffer + newBufferSize;
             *lineptr = newBuffer;
@@ -193,6 +201,7 @@ int utils_getdelim(char** lineptr, int* n,
         p1 += readLength - delimiterLength;
         fseek(stream, -delimiterLength, SEEK_CUR);
     }
+    free(buffer);
 
     if (readLength <= 0)
         return -1;

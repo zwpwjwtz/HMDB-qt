@@ -5,7 +5,7 @@
 #include <QStandardItemModel>
 
 
-class HmdbBatchQuery;
+class HmdbBatchQueryWorker;
 class ControlMassModificationList;
 
 namespace Ui {
@@ -34,11 +34,14 @@ protected:
         PageQueryFinished
     };
 
-    virtual void hideEvent(QHideEvent* event);
+    virtual void showEvent(QShowEvent* event);
     virtual bool validateCurrentPage();
 
 private slots:
-    void onBatchQueryProgressed();
+    void done(int r);
+
+    void onBatchQueryProgressed(double progress);
+    void onBatchQueryFinished(bool successful);
 
     void on_buttonSelectSourcePath_clicked();
     void on_buttonSelectTargetPath_clicked();
@@ -48,15 +51,16 @@ private slots:
 
 private:
     Ui::DialogBatchQuery *ui;
-    ControlMassModificationList* massModificationList;
     QStandardItemModel modelQueryFields;
-    HmdbBatchQuery* searchEngine;
-    bool lastQuerySuccessful;
+    ControlMassModificationList* massModificationList;
+    HmdbBatchQueryWorker* searchEngine;
     QString dataDir;
+    bool lastQuerySuccessful;
 
     void resetQueryFields();
 
     bool launchQuery();
+    void stopQuery();
 };
 
 #endif // DIALOGBATCHQUERY_H

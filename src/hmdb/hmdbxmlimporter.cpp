@@ -1,16 +1,18 @@
-#include <sys/stat.h>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include "hmdbxmlimporter.h"
 #include "hmdbxml_def.h"
 #include "utils/stdc.h"
+#include "utils/filesystem.h"
 
 
 HmdbXMLImporter::HmdbXMLImporter()
 {
     sourceXML = nullptr;
     destDir = nullptr;
+    finishedCallback = nullptr;
+    progressCallback = nullptr;
     lastCount = 0;
 }
 
@@ -22,11 +24,10 @@ HmdbXMLImporter::~HmdbXMLImporter()
 
 bool HmdbXMLImporter::setSourceXML(const char* filename)
 {
-    struct stat fileInfo;
-    if (stat(filename, &fileInfo) != 0 || S_ISDIR(fileInfo.st_mode))
+    if (!utils_isFile(filename))
         return false;
 
-    if (!sourceXML)
+    if (sourceXML)
         delete[] sourceXML;
 
     sourceXML = new char[strlen(filename) + 1];
@@ -37,11 +38,10 @@ bool HmdbXMLImporter::setSourceXML(const char* filename)
 
 bool HmdbXMLImporter::setTargetDir(const char* directory)
 {
-    struct stat fileInfo;
-    if (stat(directory, &fileInfo) != 0 || !S_ISDIR(fileInfo.st_mode))
+    if (!utils_isDirectory(directory))
         return false;
 
-    if (!destDir)
+    if (destDir)
         delete[] destDir;
 
     destDir = new char[strlen(directory) + 1];
@@ -52,10 +52,15 @@ bool HmdbXMLImporter::setTargetDir(const char* directory)
 bool HmdbXMLImporter::import()
 {
     if (!sourceXML || !destDir)
+    {
+        if (finishedCallback != nullptr)
+            finishedCallback(false);
         return false;
+    }
 
     char* buffer;
     long readLength;
+    unsigned long totalLength = utils_fileLength(sourceXML);
 
     lastCount = 0;
     FILE* source = fopen(sourceXML, "rb");
@@ -71,19 +76,39 @@ bool HmdbXMLImporter::import()
                                     source);
         if (readLength > 0)
         {
-            writeEntry(buffer, readLength);
+            if (!writeEntry(buffer, readLength))
+            {
+                free(buffer);
+                fclose(source);
+                return false;
+            }
             free(buffer);
             lastCount++;
         }
+
+        if (progressCallback != nullptr && totalLength > 0)
+            progressCallback(100.0 * ftell(source) / totalLength);
     }
     fclose(source);
 
+    if (finishedCallback != nullptr)
+        finishedCallback(true);
     return true;
 }
 
 long HmdbXMLImporter::count()
 {
     return lastCount;
+}
+
+void HmdbXMLImporter::setProgressCallback(std::function<void(double)> func)
+{
+    progressCallback = func;
+}
+
+void HmdbXMLImporter::setFinishedCallback(std::function<void(bool)> func)
+{
+    finishedCallback = func;
 }
 
 char* HmdbXMLImporter::getEntryID(const char* content)
@@ -120,6 +145,8 @@ bool HmdbXMLImporter::writeEntry(const char* content, long length)
 
     long writeCount = 0;
     FILE* target = fopen(outputFile, "wb");
+    if (!target)
+        return false;
     fwrite(HMDBXML_HEADER, strlen(HMDBXML_HEADER), 1, target);
     fwrite(HMDBXML_LIST_ENTRY_BEGIN, strlen(HMDBXML_LIST_ENTRY_BEGIN), 1, target);
     writeCount = fwrite(content, length, 1, target);

@@ -2,9 +2,10 @@
 #include <windows.h>
 #else
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #endif
- #include "filesystem.h"
+#include "filesystem.h"
 
 
 std::list<std::string> utils_listDirectoryFiles(const char* dir)
@@ -37,4 +38,25 @@ std::list<std::string> utils_listDirectoryFiles(const char* dir)
 #endif
 
     return fileList;
+}
+
+bool utils_isDirectory(const char* path)
+{
+    struct stat fileInfo;
+    return stat(path, &fileInfo) == 0 && S_ISDIR(fileInfo.st_mode);
+}
+
+bool utils_isFile(const char* path)
+{
+    struct stat fileInfo;
+    return stat(path, &fileInfo) == 0 && S_ISREG(fileInfo.st_mode);
+}
+
+long utils_fileLength(const char* filename)
+{
+    struct stat fileInfo;
+    if (stat(filename, &fileInfo) == 0)
+        return fileInfo.st_size;
+    else
+        return 0;
 }

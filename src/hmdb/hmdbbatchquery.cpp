@@ -6,6 +6,7 @@
 #include "hmdbqueryoptions.h"
 #include "hmdbrecordgenerator.h"
 #include "hmdbquerymass.h"
+#include "utils/filesystem.h"
 
 #define HMDB_BATCH_MASS_BUFFER_MAX        1024
 
@@ -88,20 +89,35 @@ HmdbQueryError HmdbBatchQuery::error()
     return d->errorNumber;
 }
 
-int HmdbBatchQuery::currentProgress()
+int HmdbBatchQuery::progress()
 {
-    return d->currentProgress;
+    if (d->totalProgress > 0)
+        return int(100.0 * d->currentProgress / d->totalProgress);
+    else
+        return 0;
 }
 
-int HmdbBatchQuery::totalProgress()
+void HmdbBatchQuery::setProgressCallback(std::function<void(double)> func)
 {
-    return d->totalProgress;
+    d->progressCallback = func;
+}
+
+void HmdbBatchQuery::setFinishedCallback(std::function<void(bool)> func)
+{
+    d->finishedCallback = func;
 }
 
 bool HmdbBatchQuery::queryMass()
 {
     if (!d->checkData())
+    {
+        if (d->finishedCallback != nullptr)
+            d->finishedCallback(false);
         return false;
+    }
+
+    d->totalProgress = utils_fileLength(d->sourcePath);
+    d->currentProgress = 0;
 
     // Open the input & output file
     FILE* sourceFile = fopen(d->sourcePath, "rb");
@@ -227,15 +243,25 @@ bool HmdbBatchQuery::queryMass()
                 fputs(HMDB_BATCH_RESULT_FIELD_SEP, targetFile);
             fputs(HMDB_BATCH_RESULT_RECORD_SEP, targetFile);
         }
+
+        // Report the progress
+        d->currentProgress = ftell(sourceFile);
+        if (d->totalProgress != 0 && d->progressCallback != nullptr)
+            d->progressCallback(100.0 * d->currentProgress / d->totalProgress);
     }
     fclose(sourceFile);
     fclose(targetFile);
+
+    if (d->finishedCallback != nullptr)
+        d->finishedCallback(true);
     return true;
 }
 
 void HmdbBatchQuery::stopQuery()
 {
     d->status = HmdbQueryStatus::None;
+    if (d->finishedCallback != nullptr)
+        d->finishedCallback(false);
 }
 
 HmdbBatchQueryPrivate::HmdbBatchQueryPrivate(HmdbBatchQuery* parent)
@@ -250,6 +276,8 @@ HmdbBatchQueryPrivate::HmdbBatchQueryPrivate(HmdbBatchQuery* parent)
     status = HmdbQueryStatus::None;
     currentProgress = 0;
     totalProgress = 0;
+    finishedCallback = nullptr;
+    progressCallback = nullptr;
 }
 
 HmdbBatchQueryPrivate::~HmdbBatchQueryPrivate()
@@ -260,17 +288,17 @@ HmdbBatchQueryPrivate::~HmdbBatchQueryPrivate()
 
 bool HmdbBatchQueryPrivate::checkData()
 {
-    if (!dataDir)
+    if (!utils_isDirectory(dataDir))
     {
         errorNumber = NoDatabase;
         return false;
     }
-    if (!sourcePath)
+    if (!utils_isFile(sourcePath))
     {
         errorNumber = NoSourceFile;
         return false;
     }
-    if (!targetPath)
+    if (!utils_isFile(targetPath))
     {
         errorNumber = NoTargetFile;
         return false;

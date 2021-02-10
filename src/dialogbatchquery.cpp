@@ -5,7 +5,7 @@
 #include "widgets/controlmassmodificationlist.h"
 #include "ui_dialogbatchquery.h"
 #include "hmdb/hmdbxml_def.h"
-#include "hmdb/hmdbbatchquery.h"
+#include "threads/hmdbbatchqueryworker.h"
 #include "hmdb/hmdbqueryoptions.h"
 
 #define HMDB_BATCH_TARGET_SUFFIX        "_QueryResult"
@@ -37,15 +37,16 @@ void DialogBatchQuery::setDataDirectory(QString dir)
 
 DialogBatchQuery::~DialogBatchQuery()
 {
+    stopQuery();
     delete massModificationList;
     delete ui;
-    delete searchEngine;
 }
 
-void DialogBatchQuery::hideEvent(QHideEvent* event)
+void DialogBatchQuery::showEvent(QShowEvent* event)
 {
     Q_UNUSED(event)
-    restart();
+    if (!(searchEngine && searchEngine->isRunning()))
+        restart();
 }
 
 bool DialogBatchQuery::validateCurrentPage()
@@ -92,6 +93,24 @@ bool DialogBatchQuery::validateCurrentPage()
     return true;
 }
 
+void DialogBatchQuery::done(int r)
+{
+    if (r == QDialog::Rejected)
+    {
+        if (searchEngine && searchEngine->isRunning())
+        {
+            if (QMessageBox::warning(this, "Stop running tasks",
+                                     "A query is being processed. "
+                                     "Do you want to terminate it now?",
+                                     QMessageBox::Yes | QMessageBox::No)
+                    != QMessageBox::Yes)
+                return;
+        }
+        stopQuery();
+        hide();
+    }
+}
+
 void DialogBatchQuery::resetQueryFields()
 {
     QStandardItemModel& model = modelQueryFields;
@@ -133,11 +152,19 @@ void DialogBatchQuery::resetQueryFields()
 bool DialogBatchQuery::launchQuery()
 {
     if (!searchEngine)
-        searchEngine = new HmdbBatchQuery;
+    {
+        searchEngine = new HmdbBatchQueryWorker;
+        connect(searchEngine, SIGNAL(progressed(double)),
+                this, SLOT(onBatchQueryProgressed(double)),
+                Qt::QueuedConnection);
+        connect(searchEngine, SIGNAL(finished(bool)),
+                this, SLOT(onBatchQueryFinished(bool)),
+                Qt::QueuedConnection);
+    }
     else
     {
         if (searchEngine->status() == HmdbQueryStatus::Working)
-            searchEngine->stopQuery();
+            searchEngine->stop();
     }
     searchEngine->setDataDirectory(dataDir.toLocal8Bit().constData());
     searchEngine->setSourcePath(
@@ -171,6 +198,8 @@ bool DialogBatchQuery::launchQuery()
     {
         case 0: // Query by Mass
         {
+            searchEngine->setQueryType(HmdbBatchQueryWorker::ByMass);
+
             bool conversionOK;
             ui->textMassTolerance->text().toDouble(&conversionOK);
             if (!conversionOK)
@@ -206,16 +235,44 @@ bool DialogBatchQuery::launchQuery()
                         massModificationNames.join(HMDB_QUERY_OPTION_FIELD_SEP)
                                              .toLocal8Bit().constData());
 
-            lastQuerySuccessful = searchEngine->queryMass();
             break;
         }
         default:;
     }
+
+    // Lock command buttons...
+    button(QWizard::BackButton)->setEnabled(false);
+    button(QWizard::NextButton)->setEnabled(false);
+    ui->progressBatch->setValue(0);
+
+    // Start the query in a new thread
+    searchEngine->start();
     return true;
 }
 
-void DialogBatchQuery::onBatchQueryProgressed()
+void DialogBatchQuery::stopQuery()
 {
+    if (searchEngine)
+    {
+        if (searchEngine->isRunning())
+        {
+            searchEngine->terminate();
+            searchEngine->wait();
+        }
+        delete searchEngine;
+        searchEngine = nullptr;
+    }
+    ui->progressBatch->setValue(0);
+}
+
+void DialogBatchQuery::onBatchQueryProgressed(double progress)
+{
+    ui->progressBatch->setValue(int(progress));
+}
+
+void DialogBatchQuery::onBatchQueryFinished(bool successful)
+{
+    lastQuerySuccessful = successful;
     next();
 }
 
@@ -264,10 +321,9 @@ void DialogBatchQuery::on_DialogBatchQuery_currentIdChanged(int id)
         case PageQueryProgress:
             if (!launchQuery())
                 back();
-            else
-                next();
             break;
         case PageQueryFinished:
+            button(QWizard::BackButton)->setEnabled(false);
             if (lastQuerySuccessful)
                 ui->labelQueryResult->setText("Query completed successfully.");
             else

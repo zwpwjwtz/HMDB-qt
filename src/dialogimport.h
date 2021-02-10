@@ -2,8 +2,9 @@
 #define DIALOGIMPORT_H
 
 #include <QWizard>
-#include "hmdb/hmdbxmlimporter.h"
 
+
+class HmdbXMLImporterWorker;
 
 namespace Ui {
 class DialogImport;
@@ -24,6 +25,11 @@ protected:
     virtual void showEvent(QShowEvent* event);
 
 private slots:
+    virtual void done(int r);
+
+    void onImporterProgressed(double finishedPercent);
+    void onImporterFinished(bool successful);
+
     void on_buttonChooseFile_clicked();
     void on_buttonChooseDir_clicked();
     void on_DialogImport_currentIdChanged(int id);
@@ -33,13 +39,11 @@ private slots:
 
 private:
     Ui::DialogImport *ui;
+    HmdbXMLImporterWorker* importer;
     bool initialized;
 
-    QString importXML;
-    QString importDir;
-    HmdbXMLImporter importer;
-
-    void startImport();
+    bool startImport();
+    void stop();
 };
 
 #endif // DIALOGIMPORT_H

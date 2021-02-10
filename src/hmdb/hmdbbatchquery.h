@@ -1,6 +1,7 @@
 #ifndef HMDBBATCHQUERY_H
 #define HMDBBATCHQUERY_H
 
+#include <functional>
 #include "hmdbquery.h"
 
 
@@ -38,8 +39,10 @@ public:
     HmdbQueryStatus status();
     HmdbQueryError error();
 
-    int currentProgress();
-    int totalProgress();
+    int progress();
+
+    void setProgressCallback(std::function<void(double)> func);
+    void setFinishedCallback(std::function<void(bool)> func);
 
     bool queryMass();
     void stopQuery();

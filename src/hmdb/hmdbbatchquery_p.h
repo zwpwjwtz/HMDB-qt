@@ -14,8 +14,11 @@ public:
     HmdbQueryStatus status;
     HmdbQueryError errorNumber;
 
-    int currentProgress;
-    int totalProgress;
+    long currentProgress;
+    long totalProgress;
+
+    std::function<void(double)> progressCallback;
+    std::function<void(bool)> finishedCallback;
 
     HmdbBatchQueryPrivate(HmdbBatchQuery* parent = nullptr);
     ~HmdbBatchQueryPrivate();

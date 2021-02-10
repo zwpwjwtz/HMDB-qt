@@ -90,6 +90,7 @@ QList<int> ControlMassModificationList::selectedIndexes()
         if (model.item(i, 0)->checkState() == Qt::Checked)
             indexList.push_back(i);
     }
+    return indexList;
 }
 
 QString ControlMassModificationList::mz(int index)
