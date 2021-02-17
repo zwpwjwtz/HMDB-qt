@@ -3,10 +3,15 @@
 #include <QFileDialog>
 #include "formquery.h"
 #include "ui_formquery.h"
+#include "widgets/controlmssearchoption.h"
 
-#define HMDB_QUERY_TYPE_ID        1
-#define HMDB_QUERY_TYPE_NAME      2
-#define HMDB_QUERY_TYPE_MASS      3
+#define HMDB_QUERY_TYPE_ID        0
+#define HMDB_QUERY_TYPE_NAME      1
+#define HMDB_QUERY_TYPE_MASS      2
+#define HMDB_QUERY_TYPE_MSMS      3
+
+#define HMDB_QUERY_MSMS_TOLERANCE_DEFAULT    0.1
+#define HMDB_QUERY_MSMS_INTENSITY_DEFAULT    0
 
 
 FormQuery::FormQuery(QWidget *parent) :
@@ -14,15 +19,34 @@ FormQuery::FormQuery(QWidget *parent) :
     ui(new Ui::FormQuery)
 {
     ui->setupUi(this);
+    widgetMSSearchOption = nullptr;
 
     resultLoaded = false;
 
     ui->viewSearchResult->setModel(&modelResult);
+    ui->widgetSearchOption->setCurrentIndex(HMDB_QUERY_TYPE_ID);
+    ui->textMSMSPeaks->setPlaceholderText(
+                "mz1 Intensity1\n"
+                "mz2 Intensity2\n"
+                "mz3 Intensity3\n");
 }
 
 FormQuery::~FormQuery()
 {
     delete ui;
+}
+
+void FormQuery::hideEvent(QHideEvent* event)
+{
+    Q_UNUSED(event)
+    if (widgetMSSearchOption)
+        widgetMSSearchOption->hide();
+}
+
+void FormQuery::resizeEvent(QResizeEvent* event)
+{
+    Q_UNUSED(event)
+    ui->horizontalLayout->setGeometry(QRect(0, 0, width(), height()));
 }
 
 bool FormQuery::checkDatabase()
@@ -34,7 +58,6 @@ bool FormQuery::checkDatabase()
                               "Please choose the location for a imported database." 
                               );
         on_buttonSetDatabase_clicked();
-        return false;
     }
     if (!database.isReady())
     {
@@ -48,6 +71,36 @@ bool FormQuery::checkDatabase()
     return database.isReady();
 }
 
+bool FormQuery::checkMSMSDatabase()
+{
+    if (msmsDataDir.isEmpty())
+    {
+        QMessageBox::critical(this, "MS/MS Database not set",
+                              "No MS/MS database set yet. "
+                              "Please choose the location for a imported database."
+                              );
+        QString newDir = QFileDialog::getExistingDirectory(this,
+                                         "Select a database directory",
+                                          dataDir);
+        if (newDir.isEmpty())
+            return false;
+
+        msmsDataDir = newDir;
+        database.setDataDirectory(msmsDataDir.toLocal8Bit().constData(),
+                                  HmdbQuery::DatabaseType::MSMS);
+    }
+    if (!database.isReady(HmdbQuery::DatabaseType::MSMS))
+    {
+        if (QMessageBox::question(this, "Database not indexed",
+                                  "The index for HMDB has not been built yet. \n"
+                                  "Do you want to build it now?")
+                != QMessageBox::Yes)
+            return false;
+        database.getReady(HmdbQuery::DatabaseType::MSMS);
+    }
+    return database.isReady(HmdbQuery::DatabaseType::MSMS);
+}
+
 void FormQuery::setDataDirectory(QString dir)
 {
     dataDir = dir;
@@ -55,24 +108,18 @@ void FormQuery::setDataDirectory(QString dir)
     database.setDataDirectory(dataDir.toLocal8Bit().constData());
 }
 
-void FormQuery::resizeEvent(QResizeEvent* event)
-{
-    Q_UNUSED(event)
-    ui->horizontalLayout->setGeometry(QRect(0, 0, width(), height()));
-}
-
-void FormQuery::showQueryResult(const HmdbQueryRecord& record)
+void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
 {
     if (resultLoaded)
         saveColumnWidth();
 
     modelResult.clear();
-    modelResult.setHorizontalHeaderLabels(QStringList() <<
-                                          "ID" <<
-                                          "Name" <<
-                                          "Formula" <<
-                                          "Mass" <<
-                                          "Mono. Mass");
+
+    QStringList headerLables;
+    headerLables << "ID" << "Name" << "Formula" << "Mass" << "Mono. Mass";
+    if (showRank)
+        headerLables << "Rank";
+    modelResult.setHorizontalHeaderLabels(headerLables);
 
     int i, j;
     HmdbQueryRecordEntry* entry;
@@ -92,6 +139,8 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record)
         {
             rowItems.push_back(new QStandardItem(entry->propertyValues[j]));
         }
+        if (showRank)
+            rowItems.push_back(new QStandardItem(QString::number(entry->rank)));
         modelResult.appendRow(rowItems);
     }
 
@@ -115,7 +164,68 @@ void FormQuery::saveColumnWidth()
 void FormQuery::restoreColumnWidth()
 {
     for (int i=0; i<modelResult.columnCount(); i++)
+    {
+        if (i >= listColumnWidth.length())
+            break;
         ui->viewSearchResult->setColumnWidth(i, listColumnWidth[i]);
+    }
+}
+
+bool FormQuery::parsePeakList (QByteArray content,
+                               QVector<double>& mzList,
+                               QVector<double>& intensityList)
+{
+    mzList.clear();
+    intensityList.clear();
+
+    int pos1 = 0, pos2;
+    double tempValue;
+    bool conversionOK;
+    QString buffer;
+    QStringList fieldList;
+    while (pos1 < content.length())
+    {
+        pos2 = content.indexOf('\n', pos1);
+        if (pos2 < 0)
+            pos2 = content.length();
+        buffer = content.mid(pos1, pos2 - pos1);
+        pos1 = pos2 + 1;
+
+        if (buffer.contains('\t'))
+            fieldList = buffer.split('\t', QString::SkipEmptyParts);
+        else if (buffer.contains(','))
+            fieldList = buffer.split(',', QString::SkipEmptyParts);
+        else if (buffer.contains(';'))
+            fieldList = buffer.split(';', QString::SkipEmptyParts);
+        else
+            fieldList = buffer.split(' ', QString::SkipEmptyParts);
+        if (fieldList.length() < 1)
+            continue;
+
+        // Parse the m/z
+        tempValue = fieldList[0].toDouble(&conversionOK);
+        if (conversionOK)
+        {
+            mzList.push_back(tempValue);
+            if (fieldList.length() < 2)
+                continue;
+
+            // Parse the intensity (optional)
+            tempValue = fieldList[1].toDouble(&conversionOK);
+            if (conversionOK || intensityList.length() > 0)
+            {
+                if (conversionOK)
+                    intensityList.push_back(tempValue);
+                else
+                {
+                    // Missing intensity value for this line
+                    intensityList.push_back(HMDB_QUERY_MSMS_INTENSITY_DEFAULT);
+                }
+            }
+        }
+    }
+
+    return mzList.length() > 0;
 }
 
 void FormQuery::on_comboBox_currentIndexChanged(int index)
@@ -199,4 +309,82 @@ void FormQuery::on_buttonQueryName_clicked()
 
     showQueryResult(database.queryName(
                         ui->textQueryName->text().toLocal8Bit().constData()));
+}
+
+void FormQuery::on_buttonSelectMSMSFile_clicked()
+{
+    QString newFile = QFileDialog::getOpenFileName(this,
+                                               "Select a mass spectrum file",
+                                                msmsFilePath);
+    if (newFile.isEmpty())
+        return;
+    msmsFilePath = newFile;
+    ui->textMSMSFile->setText(msmsFilePath);
+}
+
+void FormQuery::on_radioMSMSFromFile_toggled(bool checked)
+{
+    ui->textMSMSFile->setEnabled(checked);
+    ui->buttonSelectMSMSFile->setEnabled(checked);
+    ui->textMSMSPeaks->setEnabled(!checked);
+}
+
+void FormQuery::on_buttonOptionQueryMSMS_clicked()
+{
+    if (!widgetMSSearchOption)
+        widgetMSSearchOption = new ControlMSSearchOption();
+    widgetMSSearchOption->move(QCursor::pos());
+    widgetMSSearchOption->show();
+}
+
+void FormQuery::on_buttonQueryMSMS_clicked()
+{
+    if (!checkDatabase() || !checkMSMSDatabase())
+        return;
+
+    QVector<double> mzList, intensityList;
+    if (ui->radioMSMSFromFile->isChecked())
+    {
+        QFile msPeakFile(ui->textMSMSFile->text());
+        if (!msPeakFile.open(QFile::ReadOnly))
+        {
+            QMessageBox::critical(this, "Input file not accessible",
+                                  "The spectrum file for MS/MS search is not "
+                                  "readable. Please select another one.");
+            return;
+        }
+        parsePeakList(msPeakFile.readAll(), mzList, intensityList);
+    }
+    else
+        parsePeakList(ui->textMSMSPeaks->toPlainText().toLocal8Bit(),
+                      mzList, intensityList);
+    if (mzList.length() < 1)
+    {
+        QMessageBox::warning(this, "No peak in the spectrum",
+                             "No peak (m/z value) found in the give spectrum.");
+        return;
+    }
+
+    HmdbQuery::MassSpectrumMode ionizationMode = HmdbQuery::Positive;
+    double massTolerance = HMDB_QUERY_MSMS_TOLERANCE_DEFAULT;
+    bool relativeTolerance = false;
+    if (widgetMSSearchOption)
+    {
+        // User has specified some search options
+        ionizationMode =
+            HmdbQuery::MassSpectrumMode(widgetMSSearchOption->ionizationMode());
+        massTolerance = widgetMSSearchOption->relativeMassTolerance() ?
+                               widgetMSSearchOption->massTolerance() * 1E-6 :
+                               widgetMSSearchOption->massTolerance();
+        relativeTolerance = widgetMSSearchOption->relativeMassTolerance();
+    }
+    showQueryResult(database.queryMassSpectrum(massTolerance,
+                                               relativeTolerance,
+                                               ionizationMode,
+                                               mzList.length(),
+                                               mzList.data(),
+                                               intensityList.length() > 0 ?
+                                               intensityList.data() :
+                                               nullptr),
+                    true);
 }

@@ -20,6 +20,7 @@ struct HmdbQueryRecordEntry
     char* ID;
     int propertyCount;
     char** propertyValues;
+    int rank;
 
     HmdbQueryRecordEntry();
     HmdbQueryRecordEntry(const HmdbQueryRecordEntry& src);
@@ -36,6 +37,7 @@ struct HmdbQueryRecord
     HmdbQueryRecordEntry** entries;
 
     HmdbQueryRecord();
+    HmdbQueryRecord(const HmdbQueryRecord& src);
     ~HmdbQueryRecord();
 
     HmdbQueryRecord& operator= (const HmdbQueryRecord& src);
@@ -44,20 +46,39 @@ struct HmdbQueryRecord
 class HmdbQuery
 {
 public:
+    enum DatabaseType
+    {
+        Main = 0,
+        MSMS = 1
+    };
+    enum MassSpectrumMode
+    {
+        Unknown = 0,
+        Positive = 1,
+        Negative = 2
+    };
+
     HmdbQuery();
     ~HmdbQuery();
-    
-    void setDataDirectory(const char* dir);
-    void setQueryProperty(char** properties, int propertyCount);
-    void setDefaultQueryProperty();
 
-    void getReady();
-    bool isReady();
+    void setDataDirectory(const char* dir, DatabaseType type = Main);
+
+    void setDefaultQueryProperty();
+    void setQueryProperty(char** properties, int propertyCount);
+
+    void getReady(DatabaseType type = Main);
+    bool isReady(DatabaseType type = Main);
 
     HmdbQueryRecord queryID(const char* ID);
     HmdbQueryRecord queryMass(double min, double max);
     HmdbQueryRecord queryMonoMass(double min, double max);
     HmdbQueryRecord queryName(const char* name);
+    HmdbQueryRecord queryMassSpectrum(double tolerance,
+                                      bool relativeTolerance,
+                                      MassSpectrumMode mode,
+                                      int peaksCount,
+                                      double* mzList,
+                                      double* intensityList = nullptr);
     
 protected:
     HmdbQueryPrivate* d_ptr;

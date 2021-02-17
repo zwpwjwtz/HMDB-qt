@@ -9,6 +9,9 @@ extern "C" {
 // Find the position of the first occurance of a substring in string
 int utils_strpos(const char* haystack, const char* needle);
 
+// Like strstr, but search up to LENGTH bytes
+int utils_strnstr(const char* haystack, const char* needle, int length);
+
 // Like strstr, but search from the end of the HAYSTACK
 char* utils_rstrstr(const char* haystack, const char* needle);
 

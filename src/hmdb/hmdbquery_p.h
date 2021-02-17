@@ -10,8 +10,8 @@
 class HmdbQueryPrivate
 {
 public:
+    std::map<int, std::string> dataDir;
 
-    char* dataDir;
     std::vector<std::string> queryPropertyList;
     std::map<std::string, std::string> queryOptions;
 

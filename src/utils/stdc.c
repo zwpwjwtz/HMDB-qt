@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include "stdc.h"
 
-#define UTILS_FILE_BUFFER_MAX   1024
+#define FALSE                   0
+#define TRUE                    1
+#define UTILS_FILE_BUFFER_LEN   1024
 
 
 int utils_strpos(const char* haystack, const char* needle)
@@ -13,6 +15,15 @@ int utils_strpos(const char* haystack, const char* needle)
         return (int)(pos - haystack);
     else
         return -1;
+}
+
+int utils_strnstr(const char* haystack, const char* needle, int length)
+{
+    const char* pos = strstr(haystack, needle);
+    if (pos - haystack + strlen(needle) <= length)
+        return pos;
+    else
+        return NULL;
 }
 
 char* utils_rstrstr(const char* haystack, const char* needle)
@@ -47,8 +58,9 @@ int utils_isspace(const char* str, int length)
 
 char* utils_strncpy (char* dest, const char* src, int count)
 {
+    char* pos = strncpy(dest, src, count);
     dest[count] = '\0';
-    return strncpy(dest, src, count);
+    return pos;
 }
 
 char* utils_tolower(const char* str, int length)
@@ -73,22 +85,25 @@ int utils_fseekstr(const char* delimiter, FILE* stream)
 
     int readLength;
     const long delimiterLength = strlen(delimiter);
-    const long seekLength = UTILS_FILE_BUFFER_MAX + delimiterLength;
+    const long seekLength = UTILS_FILE_BUFFER_LEN + delimiterLength;
     char* buffer = malloc(seekLength * sizeof(char));
     char* pos;
-    while (1)
+    while (TRUE)
     {
         readLength = fread(buffer, 1, seekLength, stream);
         if (readLength <= 0)
             break;
 
-        pos = strstr(buffer, delimiter);
+        pos = utils_strnstr(buffer, delimiter, readLength);
         if (pos)
         {
             count += pos - buffer;
-            fseek(stream, pos - buffer + delimiterLength - readLength, SEEK_CUR);
+            fseek(stream, pos-buffer - readLength + delimiterLength, SEEK_CUR);
             break;
         }
+
+        if (feof(stream))
+            break;
 
         fseek(stream, -delimiterLength, SEEK_CUR);
         count += readLength - delimiterLength;
@@ -113,7 +128,7 @@ int utils_getdelim(char** lineptr, int* n,
     if (n != NULL && *n > 0)
         bufferSize = *n;
     else
-        bufferSize = UTILS_FILE_BUFFER_MAX;
+        bufferSize = UTILS_FILE_BUFFER_LEN;
 
     // Reallocating memory for the buffer
     if (*lineptr == NULL)
@@ -127,20 +142,21 @@ int utils_getdelim(char** lineptr, int* n,
     char* p2 = *lineptr + bufferSize;
     char* newBuffer;
     int newBufferSize;
+    int allocationFailed = FALSE;
 
     long readLength;
     const long delimiterLength = strlen(delimiter);
-    const long seekLength = UTILS_FILE_BUFFER_MAX + delimiterLength;
+    const long seekLength = UTILS_FILE_BUFFER_LEN + delimiterLength;
     char* buffer = malloc(seekLength * sizeof(char));
     char* pos;
 
-    while (1)
+    while (TRUE)
     {
         readLength = fread(buffer, 1, seekLength, stream);
-        if (readLength <= 0 || feof(stream))
+        if (readLength <= 0)
             break;
 
-        pos = strstr(buffer, delimiter);
+        pos = utils_strnstr(buffer, delimiter, readLength);
         if (pos)
         {
             // See if we need to increase the size of the buffer
@@ -149,8 +165,7 @@ int utils_getdelim(char** lineptr, int* n,
                 if (n != NULL && *n > 0)
                 {
                     // Size limited by caller; stop reading
-                    strncpy(p1, buffer, p2 - p1 - 1);
-                    *p2 = '\0';
+                    utils_strncpy(p1, buffer, p2 - p1 - 1);
                     p1 = p2;
                     break;
                 }
@@ -159,7 +174,7 @@ int utils_getdelim(char** lineptr, int* n,
                 newBuffer = (char*)(realloc(*lineptr, newBufferSize));
                 if (newBuffer == NULL)
                 {
-                    readLength = 0;
+                    allocationFailed = TRUE;
                     break;
                 }
                 p1 += newBuffer - *lineptr;
@@ -173,6 +188,9 @@ int utils_getdelim(char** lineptr, int* n,
                   SEEK_CUR);
             break;
         }
+
+        if (feof(stream))
+            break;
 
         // See if we need to increase the size of the buffer
         if (p1 + readLength - delimiterLength + 1 >= p2)
@@ -200,13 +218,14 @@ int utils_getdelim(char** lineptr, int* n,
         utils_strncpy(p1, buffer, readLength - delimiterLength);
         p1 += readLength - delimiterLength;
         fseek(stream, -delimiterLength, SEEK_CUR);
+
     }
     free(buffer);
 
-    if (readLength <= 0)
+    if (allocationFailed)
         return -1;
     else
-        return p1 == *lineptr ? -1 : p1 - *lineptr;
+        return p1 - *lineptr;
 }
 
 int utils_fpeek(FILE* stream, char* buffer, int n)

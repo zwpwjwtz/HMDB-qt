@@ -146,7 +146,7 @@ bool HmdbBatchQuery::queryMass()
                     HmdbBatchQueryPrivate::splitString(
                             d->queryOptions[HMDB_QUERY_OPTION_MASS_MOD_NAME],
                             HMDB_QUERY_OPTION_FIELD_SEP);
-    HmdbQueryMass searchEngine(d->dataDir);
+    HmdbQueryMass searchEngine(d->dataDir.at(HmdbQuery::Main).c_str());
     HmdbQueryMassConditions conditions;
     conditions.monoisotopic = existOption(HMDB_QUERY_OPTION_MASS_MONOISOTOPIC);
     const char* queryMassField = conditions.monoisotopic ?
@@ -185,9 +185,10 @@ bool HmdbBatchQuery::queryMass()
             if (searchEngine.query(conditions, indexQueryResult) &&
                 indexQueryResult.IDList.size() > 0)
             {
-                fullQueryResult = HmdbRecordGenerator::getRecordByID(d->dataDir,
-                                                       indexQueryResult.IDList,
-                                                       properties);
+                fullQueryResult = HmdbRecordGenerator::getRecordByID(
+                                         d->dataDir.at(HmdbQuery::Main).c_str(),
+                                         indexQueryResult.IDList,
+                                         properties);
 
                 // Query succeeded; write each record as a line
                 for (j=0; j<fullQueryResult.entryCount; j++)
@@ -288,7 +289,7 @@ HmdbBatchQueryPrivate::~HmdbBatchQueryPrivate()
 
 bool HmdbBatchQueryPrivate::checkData()
 {
-    if (!utils_isDirectory(dataDir))
+    if (!utils_isDirectory(dataDir.at(HmdbQuery::Main).c_str()))
     {
         errorNumber = NoDatabase;
         return false;
