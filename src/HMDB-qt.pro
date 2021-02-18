@@ -48,7 +48,8 @@ SOURCES += \
     threads/hmdbxmlimporterworker.cpp \
     threads/hmdbbatchqueryworker.cpp \
     hmdb/hmdbquerymassspectrum.cpp \
-    widgets/controlmssearchoption.cpp
+    widgets/controlmssearchoption.cpp \
+    threads/hmdbqueryworker.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -78,7 +79,8 @@ HEADERS += \
     threads/hmdbxmlimporterworker.h \
     threads/hmdbbatchqueryworker.h \
     hmdb/hmdbquerymassspectrum.h \
-    widgets/controlmssearchoption.h
+    widgets/controlmssearchoption.h \
+    threads/hmdbqueryworker.h
 
 FORMS += \
         mainwindow.ui \

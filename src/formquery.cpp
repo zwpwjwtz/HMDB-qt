@@ -4,6 +4,7 @@
 #include "formquery.h"
 #include "ui_formquery.h"
 #include "widgets/controlmssearchoption.h"
+#include "threads/hmdbqueryworker.h"
 
 #define HMDB_QUERY_TYPE_ID        0
 #define HMDB_QUERY_TYPE_NAME      1
@@ -20,6 +21,7 @@ FormQuery::FormQuery(QWidget *parent) :
 {
     ui->setupUi(this);
     widgetMSSearchOption = nullptr;
+    database = nullptr;
 
     resultLoaded = false;
 
@@ -29,10 +31,12 @@ FormQuery::FormQuery(QWidget *parent) :
                 "mz1 Intensity1\n"
                 "mz2 Intensity2\n"
                 "mz3 Intensity3\n");
+    ui->progressQuery->hide();
 }
 
 FormQuery::~FormQuery()
 {
+    stopQuery();
     delete ui;
 }
 
@@ -49,6 +53,27 @@ void FormQuery::resizeEvent(QResizeEvent* event)
     ui->horizontalLayout->setGeometry(QRect(0, 0, width(), height()));
 }
 
+bool FormQuery::connectDatabase()
+{
+    if (!database)
+    {
+        database = new HmdbQueryWorker;
+        qRegisterMetaType<HmdbQuery::DatabaseType>("HmdbQuery::DatabaseType");
+        connect(database, SIGNAL(ready(HmdbQuery::DatabaseType)),
+                this, SLOT(onDatabaseReady()));
+        connect(database, SIGNAL(finished(bool)),
+                this, SLOT(onQueryFinished(bool)));
+    }
+    if (database->isRunning())
+    {
+        QMessageBox::warning(this, "Pending task",
+                             "An operation is going on. "
+                             "Please wait until it is finished.");
+        return false;
+    }
+    return true;
+}
+
 bool FormQuery::checkDatabase()
 {
     if (dataDir.isEmpty())
@@ -59,16 +84,25 @@ bool FormQuery::checkDatabase()
                               );
         on_buttonSetDatabase_clicked();
     }
-    if (!database.isReady())
+
+    if (!connectDatabase())
+        return false;
+
+    database->setDataDirectory(dataDir, HmdbQuery::DatabaseType::Main);
+    if (!database->isReady(HmdbQuery::DatabaseType::Main))
     {
         if (QMessageBox::question(this, "Database not indexed",
                                   "The index for HMDB has not been built yet. \n"
                                   "Do you want to build it now?")
-                != QMessageBox::Yes)
-            return false;
-        database.getReady();
+                == QMessageBox::Yes)
+        {
+            showBuildingIndexStart();
+            database->getReady(HmdbQuery::DatabaseType::Main);
+            database->start();
+        }
+        return false;
     }
-    return database.isReady();
+    return true;
 }
 
 bool FormQuery::checkMSMSDatabase()
@@ -84,32 +118,76 @@ bool FormQuery::checkMSMSDatabase()
                                           dataDir);
         if (newDir.isEmpty())
             return false;
-
         msmsDataDir = newDir;
-        database.setDataDirectory(msmsDataDir.toLocal8Bit().constData(),
-                                  HmdbQuery::DatabaseType::MSMS);
     }
-    if (!database.isReady(HmdbQuery::DatabaseType::MSMS))
+
+    if (!connectDatabase())
+        return false;
+
+    database->setDataDirectory(msmsDataDir, HmdbQuery::DatabaseType::MSMS);
+    if (!database->isReady(HmdbQuery::DatabaseType::MSMS))
     {
         if (QMessageBox::question(this, "Database not indexed",
-                                  "The index for HMDB has not been built yet. \n"
+                                  "The index for the MS/MS database "
+                                  "has not been built yet. \n"
                                   "Do you want to build it now?")
-                != QMessageBox::Yes)
-            return false;
-        database.getReady(HmdbQuery::DatabaseType::MSMS);
+                == QMessageBox::Yes)
+        {
+            showBuildingIndexStart();
+            database->getReady(HmdbQuery::DatabaseType::MSMS);
+            database->start();
+        }
+        return false;
     }
-    return database.isReady(HmdbQuery::DatabaseType::MSMS);
+    return true;
 }
 
 void FormQuery::setDataDirectory(QString dir)
 {
     dataDir = dir;
     ui->textDatabase->setText(dataDir);
-    database.setDataDirectory(dataDir.toLocal8Bit().constData());
+}
+
+void FormQuery::showBuildingIndexStart()
+{
+    ui->labelStatus->setText("Building database indexes, please wait...");
+    ui->progressQuery->setRange(0, 0);
+    ui->progressQuery->show();
+}
+
+void FormQuery::showQueryStart(int queryType)
+{
+    ui->progressQuery->setRange(0, 2);
+    ui->progressQuery->setValue(0);
+    ui->progressQuery->show();
+
+    QString statusText;
+    switch (queryType)
+    {
+        case HMDB_QUERY_TYPE_ID:
+            statusText = "Querying by metabolite ID";
+            break;
+        case HMDB_QUERY_TYPE_NAME:
+            statusText = "Querying by metabolite name";
+            break;
+        case HMDB_QUERY_TYPE_MASS:
+            statusText = "Querying by molecular mass";
+            break;
+        case HMDB_QUERY_TYPE_MSMS:
+            statusText = "Querying by secondary MS";
+            break;
+    }
+    statusText.append("...");
+    ui->labelStatus->setText(statusText);
 }
 
 void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
 {
+    ui->labelStatus->setText(QString("Query finished, loading %1 result(s)...")
+                                    .arg(record.entryCount));
+    ui->progressQuery->setValue(1);
+    QApplication::processEvents();
+
     if (resultLoaded)
         saveColumnWidth();
 
@@ -152,6 +230,25 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
     }
     else
         restoreColumnWidth();
+
+    ui->labelStatus->setText(QString("Query finished with %1 result(s).")
+                                    .arg(record.entryCount));
+}
+
+void FormQuery::stopQuery()
+{
+    if (database)
+    {
+        if (database->isRunning())
+        {
+            database->terminate();
+            database->wait();
+        }
+            delete database;
+            database = nullptr;
+    }
+    ui->progressQuery->setValue(0);
+    ui->progressQuery->setRange(0, 100);
 }
 
 void FormQuery::saveColumnWidth()
@@ -172,8 +269,8 @@ void FormQuery::restoreColumnWidth()
 }
 
 bool FormQuery::parsePeakList (QByteArray content,
-                               QVector<double>& mzList,
-                               QVector<double>& intensityList)
+                               QList<double>& mzList,
+                               QList<double>& intensityList)
 {
     mzList.clear();
     intensityList.clear();
@@ -228,6 +325,30 @@ bool FormQuery::parsePeakList (QByteArray content,
     return mzList.length() > 0;
 }
 
+void FormQuery::onDatabaseReady()
+{
+    ui->progressQuery->hide();
+    ui->labelStatus->setText("Database ready.");
+}
+
+void FormQuery::onQueryFinished(bool successful)
+{
+    if (successful)
+    {
+        if (ui->widgetSearchOption->currentIndex() == HMDB_QUERY_TYPE_MSMS)
+            showQueryResult(database->result(), true);
+        else
+            showQueryResult(database->result());
+    }
+    else
+    {
+        ui->labelStatus->clear();
+        QMessageBox::critical(this, "Query failed",
+                              "An error occurred during query.");
+    }
+    ui->progressQuery->hide();
+}
+
 void FormQuery::on_comboBox_currentIndexChanged(int index)
 {
     ui->widgetSearchOption->setCurrentIndex(index);
@@ -249,9 +370,10 @@ void FormQuery::on_buttonQueryID_clicked()
 
     if (!checkDatabase())
         return;
-    
-    showQueryResult(database.queryID(
-                        ui->textQueryID->text().toLocal8Bit().constData()));
+
+    showQueryStart(HMDB_QUERY_TYPE_ID);
+    database->queryByID(ui->textQueryID->text());
+    database->start();
 }
 
 void FormQuery::on_checkRelativeTolerance_stateChanged(int arg1)
@@ -292,10 +414,12 @@ void FormQuery::on_buttonQueryMass_clicked()
 
     double min = mass - delta;
     double max = mass + delta;
+    showQueryStart(HMDB_QUERY_TYPE_MASS);
     if (ui->radioAvgMass->isChecked())
-        showQueryResult(database.queryMass(min, max));
+        database->queryByMass(min, max);
     else
-        showQueryResult(database.queryMonoMass(min, max));
+        database->queryByMonoMass(min, max);
+    database->start();
 
 }
 
@@ -307,8 +431,9 @@ void FormQuery::on_buttonQueryName_clicked()
     if (!checkDatabase())
         return;
 
-    showQueryResult(database.queryName(
-                        ui->textQueryName->text().toLocal8Bit().constData()));
+    showQueryStart(HMDB_QUERY_TYPE_NAME);
+    database->queryByName(ui->textQueryName->text());
+    database->start();
 }
 
 void FormQuery::on_buttonSelectMSMSFile_clicked()
@@ -342,7 +467,7 @@ void FormQuery::on_buttonQueryMSMS_clicked()
     if (!checkDatabase() || !checkMSMSDatabase())
         return;
 
-    QVector<double> mzList, intensityList;
+    QList<double> mzList, intensityList;
     if (ui->radioMSMSFromFile->isChecked())
     {
         QFile msPeakFile(ui->textMSMSFile->text());
@@ -378,13 +503,8 @@ void FormQuery::on_buttonQueryMSMS_clicked()
                                widgetMSSearchOption->massTolerance();
         relativeTolerance = widgetMSSearchOption->relativeMassTolerance();
     }
-    showQueryResult(database.queryMassSpectrum(massTolerance,
-                                               relativeTolerance,
-                                               ionizationMode,
-                                               mzList.length(),
-                                               mzList.data(),
-                                               intensityList.length() > 0 ?
-                                               intensityList.data() :
-                                               nullptr),
-                    true);
+    showQueryStart(HMDB_QUERY_TYPE_MSMS);
+    database->queryByMSMS(massTolerance, relativeTolerance, ionizationMode,
+                          mzList, intensityList);
+    database->start();
 }

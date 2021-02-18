@@ -299,7 +299,7 @@ bool HmdbBatchQueryPrivate::checkData()
         errorNumber = NoSourceFile;
         return false;
     }
-    if (!utils_isFile(targetPath))
+    if (!targetPath)
     {
         errorNumber = NoTargetFile;
         return false;

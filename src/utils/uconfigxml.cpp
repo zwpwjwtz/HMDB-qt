@@ -814,7 +814,7 @@ int UconfigXMLPrivate::parseXMLDelcaration(FILE* file,
         int pos = 0;
         int attributeLength;
         UconfigKeyObject key;
-        while (true)
+        while (pos < contentLength)
         {
             attributeLength = parseTagAttribute(&buffer[pos],
                                                 key,

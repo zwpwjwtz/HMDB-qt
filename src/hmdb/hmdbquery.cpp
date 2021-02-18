@@ -142,13 +142,22 @@ HmdbQueryRecord::HmdbQueryRecord(const HmdbQueryRecord& src)
     propertyCount = src.propertyCount;
     properties = new HmdbQueryPropertyEntry*[propertyCount];
     for (i=0; i<propertyCount; i++)
-        properties[i] = new HmdbQueryPropertyEntry(*src.properties[i]);
+    {
+        if (src.properties[i])
+            properties[i] = new HmdbQueryPropertyEntry(*src.properties[i]);
+        else
+            properties[i] = nullptr;
+    }
 
     entryCount = src.entryCount;
     entries = new HmdbQueryRecordEntry*[entryCount];
     for (i=0; i<entryCount; i++)
-        entries[i] = new HmdbQueryRecordEntry(*src.entries[i]);
-
+    {
+        if (src.entries[i])
+            entries[i] = new HmdbQueryRecordEntry(*src.entries[i]);
+        else
+            entries[i] = nullptr;
+    }
 }
 
 HmdbQueryRecord::~HmdbQueryRecord()
@@ -174,7 +183,12 @@ HmdbQueryRecord& HmdbQueryRecord::operator=(const HmdbQueryRecord& src)
     propertyCount = src.propertyCount;
     properties = new HmdbQueryPropertyEntry*[propertyCount];
     for (i=0; i<propertyCount; i++)
-        properties[i] = new HmdbQueryPropertyEntry(*src.properties[i]);
+    {
+        if (src.properties[i])
+            properties[i] = new HmdbQueryPropertyEntry(*src.properties[i]);
+        else
+            properties[i] = nullptr;
+    }
 
     if (entries)
     {
@@ -185,7 +199,12 @@ HmdbQueryRecord& HmdbQueryRecord::operator=(const HmdbQueryRecord& src)
     entryCount = src.entryCount;
     entries = new HmdbQueryRecordEntry*[entryCount];
     for (i=0; i<entryCount; i++)
-        entries[i] = new HmdbQueryRecordEntry(*src.entries[i]);
+    {
+        if (src.entries[i])
+            entries[i] = new HmdbQueryRecordEntry(*src.entries[i]);
+        else
+            entries[i] = nullptr;
+    }
 
     return *this;
 }
@@ -388,6 +407,8 @@ HmdbQueryRecord HmdbQuery::queryMassSpectrum(double tolerance,
     {
         if (i >= result.scoreList.size())
             break;
+        if (fullResult.entries[i] == nullptr)
+            continue;
         fullResult.entries[i]->rank = result.scoreList[i] * 100;
     }
     return fullResult;

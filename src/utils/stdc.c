@@ -17,7 +17,7 @@ int utils_strpos(const char* haystack, const char* needle)
         return -1;
 }
 
-int utils_strnstr(const char* haystack, const char* needle, int length)
+char* utils_strnstr(const char* haystack, const char* needle, int length)
 {
     const char* pos = strstr(haystack, needle);
     if (pos - haystack + strlen(needle) <= length)

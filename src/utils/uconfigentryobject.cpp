@@ -762,8 +762,8 @@ UconfigKey* Uconfig_searchKeyByName(const char* name,
     UconfigKey* key = NULL;
     for (int i=0; i<entry->keyCount; i++)
     {
-        if (entry->keys[i] &&
-            entry->keys[i]->name &&
+        if (entry->keys[i]->name &&
+            entry->keys[i]->nameSize == nameSize &&
             memcmp(entry->keys[i]->name, name, nameSize) == 0)
         {
             key = entry->keys[i];
@@ -794,6 +794,7 @@ UconfigEntry* Uconfig_searchEntryByName(const char* name,
         for (int i=0; i<parent->subentryCount; i++)
         {
             if (parent->subentries[i]->name &&
+                parent->subentries[i]->nameSize == nameSize &&
                 memcmp(parent->subentries[i]->name, name, nameSize) == 0)
                 return parent->subentries[i];
         }
