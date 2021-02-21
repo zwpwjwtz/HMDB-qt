@@ -16,7 +16,7 @@ class HmdbQueryMass : public HmdbQueryIndex
 public:
     HmdbQueryMass();
     HmdbQueryMass(const char* dataDir);
-    ~HmdbQueryMass();
+    virtual ~HmdbQueryMass();
 
     void setDatabase(const char* path);
 
@@ -30,9 +30,9 @@ private:
     const char* dataDir;
     char* indexFileName;
 
-    bool getMass(const char* filename,
-                 double& averageMass,
-                 double& monoisotopicMass);
+    static bool getMass(const char* filename,
+                        double& averageMass,
+                        double& monoisotopicMass);
 };
 
 #endif // HMDBQUERYMASS_H

@@ -1,5 +1,5 @@
-#ifndef HmdbQueryID_H
-#define HmdbQueryID_H
+#ifndef HMDBQUERYID_H
+#define HMDBQUERYID_H
 
 #include "hmdbqueryindex.h"
 
@@ -14,7 +14,7 @@ class HmdbQueryID : public HmdbQueryIndex
 public:
     HmdbQueryID();
     HmdbQueryID(const char* dataDir);
-    ~HmdbQueryID();
+    virtual ~HmdbQueryID();
 
     void setDatabase(const char* path);
 
@@ -29,4 +29,4 @@ private:
     char* indexFileName;
 };
 
-#endif // HmdbQueryID_H
+#endif // HMDBQUERYID_H

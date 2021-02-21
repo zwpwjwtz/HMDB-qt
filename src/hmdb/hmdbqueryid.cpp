@@ -11,7 +11,6 @@
 #define HMDB_QUERY_INDEX_ID_HEADER_LEN  16
 #define HMDB_QUERY_INDEX_ID_VERSION     "1.0\n"
 #define HMDB_QUERY_INDEX_ID_TYPE        "01"
-#define HMDB_QUERY_INDEX_ID_HEADERSIZE  16
 #define HMDB_QUERY_INDEX_ID_SEP_ENTRY   "\n"
 
 
@@ -117,7 +116,7 @@ bool HmdbQueryID::query(const HmdbQueryIDConditions& criteria,
     char* buffer = nullptr;
     FILE* f = fopen(indexFileName, "rb");
     std::list<std::string> matchedID;
-    fseek(f, HMDB_QUERY_INDEX_ID_HEADERSIZE, SEEK_CUR);
+    fseek(f, HMDB_QUERY_INDEX_ID_HEADER_LEN, SEEK_CUR);
     while (!feof(f))
     {
         readLength = utils_getdelim(&buffer, nullptr,

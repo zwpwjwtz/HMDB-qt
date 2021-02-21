@@ -11,7 +11,6 @@
 #define HMDB_QUERY_INDEX_MASS_HEADER_LEN  16
 #define HMDB_QUERY_INDEX_MASS_VERSION     "1.0\n"
 #define HMDB_QUERY_INDEX_MASS_TYPE        "02"
-#define HMDB_QUERY_INDEX_MASS_HEADERSIZE  16
 #define HMDB_QUERY_INDEX_MASS_ID_SIZE     16
 #define HMDB_QUERY_INDEX_MASS_MASS_SIZE   8
 #define HMDB_QUERY_INDEX_MASS_ENTRY_SIZE  16 + 8 + 8
@@ -147,7 +146,7 @@ bool HmdbQueryMass::query(const HmdbQueryMassConditions& criteria,
     double mass;
     std::list<std::string> matchedID;
     FILE* f = fopen(indexFileName, "rb");
-    fseek(f, HMDB_QUERY_INDEX_MASS_HEADERSIZE, SEEK_CUR);
+    fseek(f, HMDB_QUERY_INDEX_MASS_HEADER_LEN, SEEK_CUR);
     while (!feof(f))
     {
         readLength = fread(buffer, HMDB_QUERY_INDEX_MASS_ENTRY_SIZE, 1, f);
