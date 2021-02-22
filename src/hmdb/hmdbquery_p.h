@@ -15,6 +15,8 @@ public:
     std::vector<std::string> queryPropertyList;
     std::map<std::string, std::string> queryOptions;
 
+    int maxQueryResult;
+
     HmdbQueryPrivate(HmdbQuery* parent = nullptr);
     ~HmdbQueryPrivate();
 

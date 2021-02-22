@@ -1,10 +1,13 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 #include "formquery.h"
 #include "ui_formquery.h"
 #include "widgets/controlmssearchoption.h"
 #include "threads/hmdbqueryworker.h"
+
 
 #define HMDB_QUERY_TYPE_ID        0
 #define HMDB_QUERY_TYPE_NAME      1
@@ -25,13 +28,21 @@ FormQuery::FormQuery(QWidget *parent) :
 
     resultLoaded = false;
 
-    ui->viewSearchResult->setModel(&modelResult);
+    modelResult = new QStandardItemModel(this);
+    modelResultProxy = new QSortFilterProxyModel(this);
+    modelResultProxy->setSourceModel(modelResult);
+    ui->viewSearchResult->setModel(modelResultProxy);
     ui->widgetSearchOption->setCurrentIndex(HMDB_QUERY_TYPE_ID);
     ui->textMSMSPeaks->setPlaceholderText(
                 "mz1 Intensity1\n"
                 "mz2 Intensity2\n"
                 "mz3 Intensity3\n");
     ui->progressQuery->hide();
+
+    connect(ui->viewSearchResult->horizontalHeader(),
+            SIGNAL(sectionClicked(int)),
+            this,
+            SLOT(onViewHeaderSearchResultClicked(int)));
 }
 
 FormQuery::~FormQuery()
@@ -191,15 +202,18 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
     if (resultLoaded)
         saveColumnWidth();
 
-    modelResult.clear();
+    modelResult->clear();
+    columnSortAscending.clear();
 
     QStringList headerLables;
     headerLables << "ID" << "Name" << "Formula" << "Mass" << "Mono. Mass";
     if (showRank)
         headerLables << "Rank";
-    modelResult.setHorizontalHeaderLabels(headerLables);
+    modelResult->setHorizontalHeaderLabels(headerLables);
 
     int i, j;
+    double tempValue;
+    bool conversionOK;
     HmdbQueryRecordEntry* entry;
     QList<QStandardItem*> rowItems;
     for (i=0; i<record.entryCount; i++)
@@ -219,7 +233,16 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
         }
         if (showRank)
             rowItems.push_back(new QStandardItem(QString::number(entry->rank)));
-        modelResult.appendRow(rowItems);
+
+        // Mark numeric values so that they can be sorted properly if needed
+        for (j=0; j<rowItems.count(); j++)
+        {
+            tempValue = rowItems[j]->text().toDouble(&conversionOK);
+            if (conversionOK)
+                rowItems[j]->setData(tempValue, Qt::DisplayRole);
+        }
+
+        modelResult->appendRow(rowItems);
     }
 
     // Resize each column when first loaded
@@ -254,13 +277,13 @@ void FormQuery::stopQuery()
 void FormQuery::saveColumnWidth()
 {
     listColumnWidth.clear();
-    for (int i=0; i<modelResult.columnCount(); i++)
+    for (int i=0; i<modelResult->columnCount(); i++)
         listColumnWidth.push_back(ui->viewSearchResult->columnWidth(i));
 }
 
 void FormQuery::restoreColumnWidth()
 {
-    for (int i=0; i<modelResult.columnCount(); i++)
+    for (int i=0; i<modelResult->columnCount(); i++)
     {
         if (i >= listColumnWidth.length())
             break;
@@ -347,6 +370,19 @@ void FormQuery::onQueryFinished(bool successful)
                               "An error occurred during query.");
     }
     ui->progressQuery->hide();
+}
+
+void FormQuery::onViewHeaderSearchResultClicked(int columnIndex)
+{
+    if (columnSortAscending.length() < 1)
+    {
+        for (int i=0; i<modelResult->columnCount(); i++)
+            columnSortAscending.push_back(false);
+    }
+    columnSortAscending[columnIndex] = !columnSortAscending[columnIndex];
+    modelResult->sort(columnIndex,
+                      columnSortAscending[columnIndex] ?
+                          Qt::AscendingOrder : Qt::DescendingOrder);
 }
 
 void FormQuery::on_comboBox_currentIndexChanged(int index)

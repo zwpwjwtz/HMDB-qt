@@ -2,10 +2,11 @@
 #define FORMQUERY_H
 
 #include <QWidget>
-#include <QStandardItemModel>
 #include "hmdb/hmdbquery.h"
 
 
+class QStandardItemModel;
+class QSortFilterProxyModel;
 class HmdbQueryWorker;
 class ControlMSSearchOption;
 
@@ -35,6 +36,7 @@ protected:
 private slots:
     void onDatabaseReady();
     void onQueryFinished(bool successful);
+    void onViewHeaderSearchResultClicked(int columnIndex);
 
     void on_comboBox_currentIndexChanged(int index);
     void on_buttonQueryID_clicked();
@@ -53,11 +55,13 @@ private:
 
     bool resultLoaded;
     QList<int> listColumnWidth;
+    QList<bool> columnSortAscending;
     QString dataDir;
     QString msmsDataDir;
     QString msmsFilePath;
     HmdbQueryWorker* database;
-    QStandardItemModel modelResult;
+    QStandardItemModel* modelResult;
+    QSortFilterProxyModel* modelResultProxy;
 
     void showBuildingIndexStart();
     void showQueryStart(int queryType);

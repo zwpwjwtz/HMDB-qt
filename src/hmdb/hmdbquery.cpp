@@ -304,6 +304,11 @@ bool HmdbQuery::isReady(HmdbQuery::DatabaseType type)
     }
 }
 
+void HmdbQuery::setMaxQueryResult(int maxNumber)
+{
+    d_ptr->maxQueryResult = maxNumber > 0 ? maxNumber : 0;
+}
+
 void HmdbQuery::setDefaultQueryProperty()
 {
     auto& list = d_ptr->queryPropertyList;
@@ -320,6 +325,7 @@ HmdbQueryRecord HmdbQuery::queryID(const char* ID)
     HmdbQueryIDConditions conditions;
     HmdbQueryIndexRecord result;
     conditions.pattern = ID;
+    conditions.maxRecord = d_ptr->maxQueryResult;
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();
 
@@ -336,6 +342,7 @@ HmdbQueryRecord HmdbQuery::queryMass(double min, double max)
     conditions.minMZ = min;
     conditions.maxMZ = max;
     conditions.monoisotopic = false;
+    conditions.maxRecord = d_ptr->maxQueryResult;
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();
 
@@ -352,6 +359,7 @@ HmdbQueryRecord HmdbQuery::queryMonoMass(double min, double max)
     conditions.minMZ = min;
     conditions.maxMZ = max;
     conditions.monoisotopic = true;
+    conditions.maxRecord = d_ptr->maxQueryResult;
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();
 
@@ -366,6 +374,7 @@ HmdbQueryRecord HmdbQuery::queryName(const char* name)
     HmdbQueryNameConditions conditions;
     HmdbQueryIndexRecord result;
     conditions.pattern = name;
+    conditions.maxRecord = d_ptr->maxQueryResult;
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();
 
@@ -397,6 +406,7 @@ HmdbQueryRecord HmdbQuery::queryMassSpectrum(double tolerance,
         conditions.mode =
                 HmdbQueryMassSpectrumConditions::MassSpectrumMode(mode);
     }
+    conditions.maxRecord = d_ptr->maxQueryResult;
 
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();

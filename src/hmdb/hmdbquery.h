@@ -69,6 +69,8 @@ public:
     void getReady(DatabaseType type = Main);
     bool isReady(DatabaseType type = Main);
 
+    void setMaxQueryResult(int maxNumber);
+
     HmdbQueryRecord queryID(const char* ID);
     HmdbQueryRecord queryMass(double min, double max);
     HmdbQueryRecord queryMonoMass(double min, double max);
