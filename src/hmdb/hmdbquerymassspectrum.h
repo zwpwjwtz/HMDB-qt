@@ -45,9 +45,10 @@ private:
     const char* dataDir;
     char* indexFileName;
 
-    static std::string getSpectrumPathByID(const char* ID,
-                                           const char* spectrumID,
-                                           const char* dataDir);
+    static bool getSpectrumPathByID(std::string& path,
+                                    const char* ID,
+                                    const char* spectrumID,
+                                    const char* dataDir);
 
     static bool getID(const char* filename, char*& ID);
     static bool getSpectrumID(const char* filename, char*& ID);
@@ -56,6 +57,11 @@ private:
                               std::vector<double>& mzList);
     static bool getPeakIntensityList(const char* filename,
                                      std::vector<double>& intensityList);
+
+    template <typename T>
+    static void getOrder(const std::vector<T> valueList,
+                         std::vector<int>& indexList,
+                         bool desceding = false);
 
     static bool matchSpectraMZ(double tolerance, bool relativeTolerance,
                                int mzCount1, const double* mzList1,

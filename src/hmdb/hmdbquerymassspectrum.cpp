@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 #include "hmdbquerymassspectrum.h"
 #include "hmdb_msms_xml_def.h"
 #include "utils/filesystem.h"
@@ -90,7 +91,8 @@ bool HmdbQueryMassSpectrum::buildIndex()
     int propertyBits;
     int massListLength;
     int j;
-    std::vector<double> mzList;
+    std::vector<int> peakOrders;
+    std::vector<double> mzList, intensityList;
     mzList.reserve(HMDB_QUERY_INDEX_MS_PEAKS_MAX);
     for (auto i=dataFileList.cbegin(); i!=dataFileList.cend(); i++)
     {
@@ -109,6 +111,18 @@ bool HmdbQueryMassSpectrum::buildIndex()
             {
                 // No required information found; skip it
                 continue;
+            }
+
+            // Try to get peak intensities
+            if (getPeakIntensityList(dataFilePath, intensityList))
+            {
+                // Sort peaks according their intensities in desceding order
+                getOrder(intensityList, peakOrders, true);
+            }
+            else
+            {
+                // No intensity provided; sort m/z in desceding order
+                getOrder(mzList, peakOrders, true);
             }
 
             // Concatenate all information to a record
@@ -132,10 +146,12 @@ bool HmdbQueryMassSpectrum::buildIndex()
             memcpy(&buffer[pos], &massListLength,
                    HMDB_QUERY_INDEX_MS_PEAKS_COUNT_SIZE);
             pos += HMDB_QUERY_INDEX_MS_PEAKS_COUNT_SIZE;
-            // The peak list
+            // The m/z list
+            // N.B.: Limited m/z values can be stored because of
+            //       the limited space of each index entry
             for (j=0; j<massListLength; j++)
             {
-                memcpy(&buffer[pos], &mzList[j],
+                memcpy(&buffer[pos], &mzList[peakOrders[j]],
                        HMDB_QUERY_INDEX_MS_PEAKS_MZ_SIZE);
                 pos += HMDB_QUERY_INDEX_MS_PEAKS_MZ_SIZE;
             }
@@ -244,7 +260,7 @@ HmdbQueryMassSpectrum::query(const HmdbQueryMassSpectrumConditions& criteria,
     auto i = matchedSpectrumID.cbegin();
     for (auto j=matchedID.cbegin(); j!=matchedID.cend(); j++)
     {
-        dataFilePath = getSpectrumPathByID((*j).c_str(), (*i).c_str(), dataDir);
+        getSpectrumPathByID(dataFilePath, (*j).c_str(), (*i).c_str(), dataDir);
         getPeakMZList(dataFilePath.c_str(), mzList);
         getPeakIntensityList(dataFilePath.c_str(), intensityList);
 
@@ -280,11 +296,12 @@ HmdbQueryMassSpectrum::query(const HmdbQueryMassSpectrumConditions& criteria,
     return true;
 }
 
-std::string HmdbQueryMassSpectrum::getSpectrumPathByID(const char* ID,
-                                                       const char* spectrumID,
-                                                       const char* dataDir)
+bool HmdbQueryMassSpectrum::getSpectrumPathByID(std::string &path,
+                                                const char* ID,
+                                                const char* spectrumID,
+                                                const char* dataDir)
 {
-    std::string path(dataDir);
+    path = dataDir;
 
     // Try the first combination
     path.append("/")
@@ -294,7 +311,7 @@ std::string HmdbQueryMassSpectrum::getSpectrumPathByID(const char* ID,
         .append(HMDB_MSMS_XML_FILENAME_END1)
         .append(HMDB_MSMS_XML_FILENAME_SUFFIX);
     if (utils_isFile(path.c_str()))
-        return path;
+        return true;
 
     // Try the second one
     path = dataDir;
@@ -305,11 +322,11 @@ std::string HmdbQueryMassSpectrum::getSpectrumPathByID(const char* ID,
         .append(HMDB_MSMS_XML_FILENAME_END2)
         .append(HMDB_MSMS_XML_FILENAME_SUFFIX);
     if (utils_isFile(path.c_str()))
-        return path;
+        return true;
 
     // No matched filename
     path.clear();
-    return path;
+    return false;
 }
 
 bool HmdbQueryMassSpectrum::getID(const char* filename, char*& ID)
@@ -445,6 +462,25 @@ HmdbQueryMassSpectrum::getPeakIntensityList(const char *filename,
     return true;
 }
 
+template <typename T>
+void HmdbQueryMassSpectrum::getOrder(const std::vector<T> valueList,
+                                     std::vector<int>& indexList,
+                                     bool desceding)
+{
+    indexList.resize(valueList.size());
+    for (int i=0; i<valueList.size(); i++)
+        indexList[i] = i;
+
+    if (desceding)
+        std::sort(indexList.begin(), indexList.end(),
+                  [valueList](int index1, int index2)
+                      { return valueList[index1] > valueList[index2]; });
+    else
+        std::sort(indexList.begin(), indexList.end(),
+                  [valueList](int index1, int index2)
+                      { return valueList[index1] <= valueList[index2]; });
+}
+
 bool HmdbQueryMassSpectrum::matchSpectraMZ(double tolerance,
                                            bool relativeTolerance,
                                            int mzCount1, const double* mzList1,
@@ -541,14 +577,17 @@ double HmdbQueryMassSpectrum::getMatchScore(double mzTolerance,
     // Step 2: Calculate the cosine similarity of two spectra
     double* intensity1 = new double[mzCount];
     double* intensity2 = new double[mzCount];
-    double norm1 = 0, norm2 = 0, intensityProduct = 0;
+    double norm1 = 0.0, norm2 = 0.0, intensityProduct = 0.0;
 
     // Step 2.1: Initialize two intensity vectors with given intensity lists
+    memset(intensity1, 0, mzCount * sizeof(double));
+    memset(intensity2, 0, mzCount * sizeof(double));
     memcpy(intensity1, intensityList1, mzCount1 * sizeof(double));
-    memset(intensity1, 0, (mzCount - mzCount1) * sizeof(double));
-    memset(intensity2, 0, mzCount1 * sizeof(double));
     for (i=0; i<mzCount2; i++)
-        intensity2[mzListIndex2[i]] = intensityList2[i];
+    {
+        if (intensity2[mzListIndex2[i]] < intensityList2[i])
+            intensity2[mzListIndex2[i]] = intensityList2[i];
+    }
 
     // Step 2.2: Calculate a dot product of two vectors
     for (i=0; i<mzCount; i++)
@@ -564,7 +603,7 @@ double HmdbQueryMassSpectrum::getMatchScore(double mzTolerance,
 
     // Step 2.4: Calculate cosine similarity and normalize it
     if (norm1 == 0.0 || norm2 == 0.0)
-        intensityProduct = 0;
+        intensityProduct = 0.0;
     else
         intensityProduct = intensityProduct / (norm1 * norm2);
 

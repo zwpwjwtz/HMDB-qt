@@ -7,6 +7,8 @@
 #include "hmdbqueryname.h"
 #include "hmdbquerymassspectrum.h"
 
+#define HMDB_QUERY_MSMS_SCORE_MAX        100.0
+
 
 HmdbQueryPropertyEntry::HmdbQueryPropertyEntry()
 {
@@ -409,7 +411,8 @@ HmdbQueryRecord HmdbQuery::queryMassSpectrum(double tolerance,
             break;
         if (fullResult.entries[i] == nullptr)
             continue;
-        fullResult.entries[i]->rank = result.scoreList[i] * 100;
+        fullResult.entries[i]->rank =
+                        result.scoreList[i] * HMDB_QUERY_MSMS_SCORE_MAX;
     }
     return fullResult;
 }
