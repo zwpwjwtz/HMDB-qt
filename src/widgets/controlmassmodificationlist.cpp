@@ -165,23 +165,23 @@ void ControlMassModificationList::on_buttonLoad_clicked()
     {
         menuLoadMassModification = new QMenu(this);
 
-        QAction* newAction = new QAction("Empty list");
+        QAction* newAction = new QAction("Empty list", this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_NULL);
         menuLoadMassModification->addAction(newAction);
 
         menuLoadMassModification->addSeparator();
 
-        newAction = new QAction("Default (Positive)");
+        newAction = new QAction("Default (Positive)", this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_POS);
         menuLoadMassModification->addAction(newAction);
 
-        newAction = new QAction("Default (Negative)");
+        newAction = new QAction("Default (Negative)", this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_NEG);
         menuLoadMassModification->addAction(newAction);
 
         menuLoadMassModification->addSeparator();
 
-        newAction = new QAction("Customized");
+        newAction = new QAction("Customized", this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_CUSTOM);
         menuLoadMassModification->addAction(newAction);
 

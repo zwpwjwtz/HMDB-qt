@@ -1,5 +1,6 @@
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
 #include "hmdbquerymass.h"
 #include "hmdbxml_def.h"
 #include "utils/filesystem.h"
