@@ -5,8 +5,6 @@
 #include "hmdb/hmdbquery.h"
 
 
-class QStandardItemModel;
-class QSortFilterProxyModel;
 class HmdbQueryWorker;
 class ControlMSSearchOption;
 
@@ -36,7 +34,6 @@ protected:
 private slots:
     void onDatabaseReady();
     void onQueryFinished(bool successful);
-    void onViewHeaderSearchResultClicked(int columnIndex);
 
     void on_comboBox_currentIndexChanged(int index);
     void on_buttonQueryID_clicked();
@@ -53,23 +50,15 @@ private:
     Ui::FormQuery *ui;
     ControlMSSearchOption* widgetMSSearchOption;
 
-    bool resultLoaded;
-    QList<int> listColumnWidth;
-    QList<bool> columnSortAscending;
     QString dataDir;
     QString msmsDataDir;
     QString msmsFilePath;
     HmdbQueryWorker* database;
-    QStandardItemModel* modelResult;
-    QSortFilterProxyModel* modelResultProxy;
 
     void showBuildingIndexStart();
     void showQueryStart(int queryType);
     void showQueryResult(const HmdbQueryRecord& record, bool showRank = false);
     void stopQuery();
-
-    void saveColumnWidth();
-    void restoreColumnWidth();
 
     static bool parsePeakList (QByteArray content,
                                QList<double>& mzList,

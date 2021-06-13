@@ -16,6 +16,7 @@ public:
     std::map<std::string, std::string> queryOptions;
 
     int maxQueryResult;
+    int maxQueryRank;
 
     HmdbQueryPrivate(HmdbQuery* parent = nullptr);
     ~HmdbQueryPrivate();

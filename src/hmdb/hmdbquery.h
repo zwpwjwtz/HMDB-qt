@@ -46,6 +46,9 @@ struct HmdbQueryRecord
 class HmdbQuery
 {
 public:
+    const int defaultMaxResult = 1000;
+    const int defaultMaxQueryRank = 99;
+
     enum DatabaseType
     {
         Main = 0,
@@ -70,6 +73,7 @@ public:
     bool isReady(DatabaseType type = Main);
 
     void setMaxQueryResult(int maxNumber);
+    void setMaxQueryRank(int maxRank);
 
     HmdbQueryRecord queryID(const char* ID);
     HmdbQueryRecord queryMass(double min, double max);

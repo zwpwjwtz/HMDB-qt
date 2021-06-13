@@ -1,8 +1,6 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QStandardItemModel>
-#include <QSortFilterProxyModel>
 #include "formquery.h"
 #include "ui_formquery.h"
 #include "widgets/controlmssearchoption.h"
@@ -26,23 +24,12 @@ FormQuery::FormQuery(QWidget *parent) :
     widgetMSSearchOption = nullptr;
     database = nullptr;
 
-    resultLoaded = false;
-
-    modelResult = new QStandardItemModel(this);
-    modelResultProxy = new QSortFilterProxyModel(this);
-    modelResultProxy->setSourceModel(modelResult);
-    ui->viewSearchResult->setModel(modelResultProxy);
     ui->widgetSearchOption->setCurrentIndex(HMDB_QUERY_TYPE_ID);
     ui->textMSMSPeaks->setPlaceholderText(
                 "mz1 Intensity1\n"
                 "mz2 Intensity2\n"
                 "mz3 Intensity3\n");
     ui->progressQuery->hide();
-
-    connect(ui->viewSearchResult->horizontalHeader(),
-            SIGNAL(sectionClicked(int)),
-            this,
-            SLOT(onViewHeaderSearchResultClicked(int)));
 }
 
 FormQuery::~FormQuery()
@@ -199,60 +186,7 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
     ui->progressQuery->setValue(1);
     QApplication::processEvents();
 
-    if (resultLoaded)
-        saveColumnWidth();
-
-    modelResult->clear();
-    columnSortAscending.clear();
-
-    QStringList headerLables;
-    headerLables << "ID" << "Name" << "Formula" << "Mass" << "Mono. Mass";
-    if (showRank)
-        headerLables << "Rank";
-    modelResult->setHorizontalHeaderLabels(headerLables);
-
-    int i, j;
-    double tempValue;
-    bool conversionOK;
-    HmdbQueryRecordEntry* entry;
-    QList<QStandardItem*> rowItems;
-    for (i=0; i<record.entryCount; i++)
-    {
-        entry = record.entries[i];
-        if (!entry)
-        {
-            // Invalid record entry; skip it
-            continue;
-        }
-
-        rowItems.clear();
-        rowItems.push_back(new QStandardItem(entry->ID));
-        for (j=0; j<entry->propertyCount; j++)
-        {
-            rowItems.push_back(new QStandardItem(entry->propertyValues[j]));
-        }
-        if (showRank)
-            rowItems.push_back(new QStandardItem(QString::number(entry->rank)));
-
-        // Mark numeric values so that they can be sorted properly if needed
-        for (j=0; j<rowItems.count(); j++)
-        {
-            tempValue = rowItems[j]->text().toDouble(&conversionOK);
-            if (conversionOK)
-                rowItems[j]->setData(tempValue, Qt::DisplayRole);
-        }
-
-        modelResult->appendRow(rowItems);
-    }
-
-    // Resize each column when first loaded
-    if (!resultLoaded)
-    {
-        ui->viewSearchResult->resizeColumnsToContents();
-        resultLoaded = true;
-    }
-    else
-        restoreColumnWidth();
+    ui->frameResult->loadResult(record, showRank);
 
     ui->labelStatus->setText(QString("Query finished with %1 result(s).")
                                     .arg(record.entryCount));
@@ -274,22 +208,6 @@ void FormQuery::stopQuery()
     ui->progressQuery->setRange(0, 100);
 }
 
-void FormQuery::saveColumnWidth()
-{
-    listColumnWidth.clear();
-    for (int i=0; i<modelResult->columnCount(); i++)
-        listColumnWidth.push_back(ui->viewSearchResult->columnWidth(i));
-}
-
-void FormQuery::restoreColumnWidth()
-{
-    for (int i=0; i<modelResult->columnCount(); i++)
-    {
-        if (i >= listColumnWidth.length())
-            break;
-        ui->viewSearchResult->setColumnWidth(i, listColumnWidth[i]);
-    }
-}
 
 bool FormQuery::parsePeakList (QByteArray content,
                                QList<double>& mzList,
@@ -370,19 +288,6 @@ void FormQuery::onQueryFinished(bool successful)
                               "An error occurred during query.");
     }
     ui->progressQuery->hide();
-}
-
-void FormQuery::onViewHeaderSearchResultClicked(int columnIndex)
-{
-    if (columnSortAscending.length() < 1)
-    {
-        for (int i=0; i<modelResult->columnCount(); i++)
-            columnSortAscending.push_back(false);
-    }
-    columnSortAscending[columnIndex] = !columnSortAscending[columnIndex];
-    modelResult->sort(columnIndex,
-                      columnSortAscending[columnIndex] ?
-                          Qt::AscendingOrder : Qt::DescendingOrder);
 }
 
 void FormQuery::on_comboBox_currentIndexChanged(int index)

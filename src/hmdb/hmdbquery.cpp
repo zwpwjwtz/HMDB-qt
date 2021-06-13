@@ -309,6 +309,11 @@ void HmdbQuery::setMaxQueryResult(int maxNumber)
     d_ptr->maxQueryResult = maxNumber > 0 ? maxNumber : 0;
 }
 
+void HmdbQuery::setMaxQueryRank(int maxRank)
+{
+    d_ptr->maxQueryRank = maxRank > 100 ? maxRank : 100;
+}
+
 void HmdbQuery::setDefaultQueryProperty()
 {
     auto& list = d_ptr->queryPropertyList;
@@ -390,13 +395,15 @@ HmdbQueryRecord HmdbQuery::queryMassSpectrum(double tolerance,
                                              double* mzList,
                                              double* intensityList)
 {
+    int i;
     HmdbQueryMassSpectrum searchEngine(d_ptr->dataDir.at(MSMS).c_str());
     HmdbQueryMassSpectrumConditions conditions;
     HmdbQueryMassSpectrumRecord result;
+    std::vector<int> rankList;
 
     conditions.mzList.reserve(peaksCount);
     conditions.intensityList.reserve(peaksCount);
-    for (int i=0; i<peaksCount; i++)
+    for (i=0; i<peaksCount; i++)
     {
         conditions.massTolerance = tolerance;
         conditions.relativeTolerance = relativeTolerance;
@@ -410,26 +417,42 @@ HmdbQueryRecord HmdbQuery::queryMassSpectrum(double tolerance,
 
     if (!searchEngine.query(conditions, result))
         return HmdbQueryRecord();
+
+    // Convert match scores to ranks (0 ~ 100)
+    rankList.reserve(result.scoreList.size());
+    for (i=0; i<result.IDList.size(); i++)
+    {
+        rankList.push_back(
+                (1.0 - result.scoreList[i]) * HMDB_QUERY_MSMS_SCORE_MAX + 1.0);
+
+        // Filter results by ranks
+        if (rankList[i] > d_ptr->maxQueryRank)
+        {
+            result.IDList[i].clear();
+            result.spectrumIDList[i].clear();
+        }
+    }
+
     HmdbQueryRecord fullResult =
             HmdbRecordGenerator::getRecordByID(d_ptr->dataDir.at(Main).c_str(),
                                                result.IDList,
                                                d_ptr->queryPropertyList);
-    // Convert match scores to ranks (0 ~ 100)
-    for (int i=0; i<fullResult.entryCount; i++)
+
+    // Fill the rank information
+    for (i=0; i<fullResult.entryCount; i++)
     {
-        if (i >= result.scoreList.size())
-            break;
-        if (fullResult.entries[i] == nullptr)
-            continue;
-        fullResult.entries[i]->rank =
-                        result.scoreList[i] * HMDB_QUERY_MSMS_SCORE_MAX;
+        if (fullResult.entries[i])
+            fullResult.entries[i]->rank = rankList[i];
     }
+
     return fullResult;
 }
 
 HmdbQueryPrivate::HmdbQueryPrivate(HmdbQuery* parent)
 {
     q_ptr = parent;
+    maxQueryResult = parent->defaultMaxResult;
+    maxQueryRank = parent->defaultMaxQueryRank;
 }
 
 HmdbQueryPrivate::~HmdbQueryPrivate()
