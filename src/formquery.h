@@ -7,6 +7,7 @@
 
 class HmdbQueryWorker;
 class ControlMSSearchOption;
+class ControlQueryField;
 
 namespace Ui {
 class FormQuery;
@@ -33,6 +34,7 @@ protected:
 
 private slots:
     void onDatabaseReady();
+    void onFieldListRequested();
     void onQueryFinished(bool successful);
 
     void on_comboBox_currentIndexChanged(int index);
@@ -49,6 +51,7 @@ private slots:
 private:
     Ui::FormQuery *ui;
     ControlMSSearchOption* widgetMSSearchOption;
+    ControlQueryField* listQueryField;
 
     QString dataDir;
     QString msmsDataDir;
@@ -58,6 +61,7 @@ private:
     void showBuildingIndexStart();
     void showQueryStart(int queryType);
     void showQueryResult(const HmdbQueryRecord& record, bool showRank = false);
+    void startQuery();
     void stopQuery();
 
     static bool parsePeakList (QByteArray content,

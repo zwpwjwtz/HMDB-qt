@@ -1,5 +1,6 @@
 #include <QVector>
 #include "hmdbqueryworker.h"
+#include "utils/stdc.h"
 
 #define HMDB_QUERY_WORKER_WORK_NONE            0
 #define HMDB_QUERY_WORKER_WORK_INDEX_MAIN      1
@@ -20,10 +21,23 @@ void HmdbQueryWorker::setDataDirectory(QString directory,
     query.setDataDirectory(directory.toLocal8Bit().constData(), type);
 }
 
-void HmdbQueryWorker::setQueryProperty(char** properties,
-                                            int propertyCount)
+void HmdbQueryWorker::setQueryProperty(const QList<QString>& properties)
 {
-    query.setQueryProperty(properties, propertyCount);
+    int i;
+    char** propertyList = new char*[properties.count()];
+    QByteArray propertyString;
+    for (i=0; i<properties.count(); i++)
+    {
+        propertyString = properties[i].toLocal8Bit();
+        propertyList[i] = new char[propertyString.length() + 1];
+        utils_strncpy(propertyList[i], propertyString.constData(),
+                      propertyString.length());
+    }
+    query.setQueryProperty(propertyList, properties.count());
+
+    for (i=0; i<properties.count(); i++)
+        delete[] propertyList[i];
+    delete[] propertyList;
 }
 
 void HmdbQueryWorker::getReady(HmdbQuery::DatabaseType type)

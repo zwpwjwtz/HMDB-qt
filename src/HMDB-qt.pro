@@ -50,7 +50,8 @@ SOURCES += \
     hmdb/hmdbquerymassspectrum.cpp \
     widgets/controlmssearchoption.cpp \
     threads/hmdbqueryworker.cpp \
-    widgets/framequeryresult.cpp
+    widgets/framequeryresult.cpp \
+    widgets/controlqueryfield.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -82,7 +83,8 @@ HEADERS += \
     hmdb/hmdbquerymassspectrum.h \
     widgets/controlmssearchoption.h \
     threads/hmdbqueryworker.h \
-    widgets/framequeryresult.h
+    widgets/framequeryresult.h \
+    widgets/controlqueryfield.h
 
 FORMS += \
         mainwindow.ui \
@@ -91,7 +93,8 @@ FORMS += \
     dialogbatchquery.ui \
     widgets/controlmassmodificationlist.ui \
     widgets/controlmssearchoption.ui \
-    widgets/framequeryresult.ui
+    widgets/framequeryresult.ui \
+    widgets/controlqueryfield.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

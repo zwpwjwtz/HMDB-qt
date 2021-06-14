@@ -59,13 +59,14 @@ void FrameQueryResult::loadResult(const HmdbQueryRecord& record, bool showRank)
     modelResult->clear();
     columnSortAscending.clear();
 
+    int i, j;
     QStringList headerLables;
-    headerLables << "ID" << "Name" << "Formula" << "Mass" << "Mono. Mass";
+    for (i=0; i<record.propertyCount; i++)
+        headerLables << record.properties[i]->name;
     if (showRank)
         headerLables << "Rank";
     modelResult->setHorizontalHeaderLabels(headerLables);
 
-    int i, j;
     double tempValue;
     bool conversionOK;
     HmdbQueryRecordEntry* entry;
@@ -80,7 +81,6 @@ void FrameQueryResult::loadResult(const HmdbQueryRecord& record, bool showRank)
         }
 
         rowItems.clear();
-        rowItems.push_back(new QStandardItem(entry->ID));
         for (j=0; j<entry->propertyCount; j++)
         {
             rowItems.push_back(new QStandardItem(entry->propertyValues[j]));
@@ -207,9 +207,16 @@ void FrameQueryResult::on_buttonSave_clicked()
     }
 
     // Write the table header
-    f.write("ID,Name,Formula,Mass,Mono. Mass\n");
-
     int i, j;
+    for (i=0; i<modelResultProxy->columnCount(); i++)
+    {
+        if (i > 0)
+            f.putChar(',');
+        f.write(modelResultProxy->headerData(i, Qt::Horizontal)
+                                .toString().toLocal8Bit());
+    }
+    f.putChar('\n');
+
     int columnCount = modelResultProxy->columnCount();
     for (i=0; i<modelResultProxy->rowCount(); i++)
     {
@@ -227,4 +234,9 @@ void FrameQueryResult::on_buttonSave_clicked()
     f.close();
 
     lastSavePath = QFileInfo(fileName).path();
+}
+
+void FrameQueryResult::on_buttonItemList_clicked()
+{
+    emit fieldListRequested();
 }

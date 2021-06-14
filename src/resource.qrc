@@ -6,5 +6,6 @@
         <file>icons/document-save-as.png</file>
         <file>resource/MassModification-positive.csv</file>
         <file>icons/globe.png</file>
+        <file>icons/item.png</file>
     </qresource>
 </RCC>

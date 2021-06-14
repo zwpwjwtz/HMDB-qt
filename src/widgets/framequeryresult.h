@@ -25,6 +25,9 @@ public:
 protected:
     void changeEvent(QEvent *e);
 
+signals:
+    void fieldListRequested();
+
 private:
     Ui::FrameQueryResult *ui;
     QStandardItemModel* modelResult;
@@ -44,6 +47,7 @@ private slots:
 
     void on_buttonOpenLink_clicked();
     void on_buttonSave_clicked();
+    void on_buttonItemList_clicked();
 };
 
 #endif // FRAMEQUERYRESULT_H

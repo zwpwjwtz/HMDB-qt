@@ -13,6 +13,11 @@
 #define HMDBXML_ENTRY_PROP_FORMULAR     "chemical_formula"
 #define HMDBXML_ENTRY_PROP_AVGMASS      "average_molecular_weight"
 #define HMDBXML_ENTRY_PROP_MONOMASS     "monisotopic_molecular_weight"
+#define HMDBXML_ENTRY_PROP_STATUS       "status"
+#define HMDBXML_ENTRY_PROP_SMILES       "smiles"
+#define HMDBXML_ENTRY_PROP_INCHI        "inchi"
+#define HMDBXML_ENTRY_PROP_INCHIKEY     "inchikey"
+#define HMDBXML_ENTRY_PROP_STATE        "state"
 
 
 #endif // HMDBXML_DEF_H

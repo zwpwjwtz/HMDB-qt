@@ -14,7 +14,7 @@ public:
     void setDataDirectory(QString directory,
                           HmdbQuery::DatabaseType type);
 
-    void setQueryProperty(char** properties, int propertyCount);
+    void setQueryProperty(const QList<QString>& properties);
 
     void getReady(HmdbQuery::DatabaseType type);
     bool isReady(HmdbQuery::DatabaseType type);

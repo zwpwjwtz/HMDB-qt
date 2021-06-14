@@ -4,8 +4,9 @@
 #include "formquery.h"
 #include "ui_formquery.h"
 #include "widgets/controlmssearchoption.h"
+#include "widgets/controlqueryfield.h"
 #include "threads/hmdbqueryworker.h"
-
+#include "utils/stdc.h"
 
 #define HMDB_QUERY_TYPE_ID        0
 #define HMDB_QUERY_TYPE_NAME      1
@@ -21,8 +22,9 @@ FormQuery::FormQuery(QWidget *parent) :
     ui(new Ui::FormQuery)
 {
     ui->setupUi(this);
-    widgetMSSearchOption = nullptr;
     database = nullptr;
+    widgetMSSearchOption = nullptr;
+    listQueryField = new ControlQueryField();
 
     ui->widgetSearchOption->setCurrentIndex(HMDB_QUERY_TYPE_ID);
     ui->textMSMSPeaks->setPlaceholderText(
@@ -30,6 +32,9 @@ FormQuery::FormQuery(QWidget *parent) :
                 "mz2 Intensity2\n"
                 "mz3 Intensity3\n");
     ui->progressQuery->hide();
+
+    connect(ui->frameResult, SIGNAL(fieldListRequested()),
+            this, SLOT(onFieldListRequested()));
 }
 
 FormQuery::~FormQuery()
@@ -186,10 +191,32 @@ void FormQuery::showQueryResult(const HmdbQueryRecord& record, bool showRank)
     ui->progressQuery->setValue(1);
     QApplication::processEvents();
 
+    // Convert property IDs to property names
+    const QList<QString>& propertNames = listQueryField->selectedFieldNameList;
+    QByteArray propertyNameString;
+    for (int i=0; i<record.propertyCount; i++)
+    {
+        delete[] record.properties[i]->name;
+        propertyNameString = propertNames[i].toLocal8Bit();
+        record.properties[i]->name = new char[propertyNameString.length() + 1];
+        utils_strncpy(record.properties[i]->name,
+                      propertyNameString.constData(),
+                      propertyNameString.length());
+    }
+
     ui->frameResult->loadResult(record, showRank);
 
     ui->labelStatus->setText(QString("Query finished with %1 result(s).")
                                     .arg(record.entryCount));
+}
+
+void FormQuery::startQuery()
+{
+    // Set query fields
+    database->setQueryProperty(listQueryField->selectedFieldIDList);
+
+    // Launch the query thread
+    database->start();
 }
 
 void FormQuery::stopQuery()
@@ -272,6 +299,12 @@ void FormQuery::onDatabaseReady()
     ui->labelStatus->setText("Database ready.");
 }
 
+void FormQuery::onFieldListRequested()
+{
+    listQueryField->move(QCursor::pos());
+    listQueryField->show();
+}
+
 void FormQuery::onQueryFinished(bool successful)
 {
     if (successful)
@@ -314,7 +347,7 @@ void FormQuery::on_buttonQueryID_clicked()
 
     showQueryStart(HMDB_QUERY_TYPE_ID);
     database->queryByID(ui->textQueryID->text());
-    database->start();
+    startQuery();
 }
 
 void FormQuery::on_checkRelativeTolerance_stateChanged(int arg1)
@@ -360,8 +393,7 @@ void FormQuery::on_buttonQueryMass_clicked()
         database->queryByMass(min, max);
     else
         database->queryByMonoMass(min, max);
-    database->start();
-
+    startQuery();
 }
 
 void FormQuery::on_buttonQueryName_clicked()
@@ -374,7 +406,7 @@ void FormQuery::on_buttonQueryName_clicked()
 
     showQueryStart(HMDB_QUERY_TYPE_NAME);
     database->queryByName(ui->textQueryName->text());
-    database->start();
+    startQuery();
 }
 
 void FormQuery::on_buttonSelectMSMSFile_clicked()
@@ -447,5 +479,5 @@ void FormQuery::on_buttonQueryMSMS_clicked()
     showQueryStart(HMDB_QUERY_TYPE_MSMS);
     database->queryByMSMS(massTolerance, relativeTolerance, ionizationMode,
                           mzList, intensityList);
-    database->start();
+    startQuery();
 }
