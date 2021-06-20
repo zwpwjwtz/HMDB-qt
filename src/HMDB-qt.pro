@@ -51,7 +51,8 @@ SOURCES += \
     widgets/controlmssearchoption.cpp \
     threads/hmdbqueryworker.cpp \
     widgets/framequeryresult.cpp \
-    widgets/controlqueryfield.cpp
+    widgets/controlqueryfield.cpp \
+    widgets/formmetaboliteviewer.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -84,7 +85,8 @@ HEADERS += \
     widgets/controlmssearchoption.h \
     threads/hmdbqueryworker.h \
     widgets/framequeryresult.h \
-    widgets/controlqueryfield.h
+    widgets/controlqueryfield.h \
+    widgets/formmetaboliteviewer.h
 
 FORMS += \
         mainwindow.ui \
@@ -94,7 +96,8 @@ FORMS += \
     widgets/controlmassmodificationlist.ui \
     widgets/controlmssearchoption.ui \
     widgets/framequeryresult.ui \
-    widgets/controlqueryfield.ui
+    widgets/controlqueryfield.ui \
+    widgets/formmetaboliteviewer.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

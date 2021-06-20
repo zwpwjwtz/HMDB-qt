@@ -59,6 +59,17 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonView">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/view-details.png</normaloff>:/icons/view-details.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="buttonOpenLink">
        <property name="toolTip">
         <string>View selected metabolite(s) online</string>

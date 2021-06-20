@@ -8,6 +8,7 @@
 class HmdbQueryWorker;
 class ControlMSSearchOption;
 class ControlQueryField;
+class FormMetaboliteViewer;
 
 namespace Ui {
 class FormQuery;
@@ -36,6 +37,7 @@ private slots:
     void onDatabaseReady();
     void onFieldListRequested();
     void onQueryFinished(bool successful);
+    void onResultDetailsRequested(QString ID);
 
     void on_comboBox_currentIndexChanged(int index);
     void on_buttonQueryID_clicked();
@@ -52,6 +54,7 @@ private:
     Ui::FormQuery *ui;
     ControlMSSearchOption* widgetMSSearchOption;
     ControlQueryField* listQueryField;
+    FormMetaboliteViewer* viewer;
 
     QString dataDir;
     QString msmsDataDir;

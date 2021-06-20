@@ -6,7 +6,7 @@
 #include <QUrl>
 #include "framequeryresult.h"
 #include "ui_framequeryresult.h"
-#include "../hmdb/hmdbquery.h"
+#include "hmdb/hmdbquery.h"
 
 #define HMDB_METABOLITES_URL_PREFIX    "https://hmdb.ca/metabolites/"
 
@@ -239,4 +239,19 @@ void FrameQueryResult::on_buttonSave_clicked()
 void FrameQueryResult::on_buttonItemList_clicked()
 {
     emit fieldListRequested();
+}
+
+void
+FrameQueryResult::on_viewSearchResult_doubleClicked(const QModelIndex& index)
+{
+    if (index.isValid())
+        emit showDetailsRequested(index.siblingAtColumn(0).data().toString());
+}
+
+void FrameQueryResult::on_buttonView_clicked()
+{
+    QModelIndexList selectedIndexes =
+                    ui->viewSearchResult->selectionModel()->selectedIndexes();
+    for (auto i=selectedIndexes.begin(); i!=selectedIndexes.end(); i++)
+        emit showDetailsRequested(i->siblingAtColumn(0).data().toString());
 }

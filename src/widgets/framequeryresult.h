@@ -27,6 +27,7 @@ protected:
 
 signals:
     void fieldListRequested();
+    void showDetailsRequested(QString ID);
 
 private:
     Ui::FrameQueryResult *ui;
@@ -48,6 +49,8 @@ private slots:
     void on_buttonOpenLink_clicked();
     void on_buttonSave_clicked();
     void on_buttonItemList_clicked();
+    void on_viewSearchResult_doubleClicked(const QModelIndex& index);
+    void on_buttonView_clicked();
 };
 
 #endif // FRAMEQUERYRESULT_H

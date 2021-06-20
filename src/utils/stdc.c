@@ -46,9 +46,9 @@ int utils_isspace(const char* str, int length)
 {
     while (length > 0)
     {
-        if (*str != ' ' || *str != '\0' ||
-            *str != '\t' || *str != '\v'  ||
-            *str != '\n' || *str != '\r' || *str != '\f')
+        if (*str != ' ' && *str != '\0' &&
+            *str != '\t' && *str != '\v'  &&
+            *str != '\n' && *str != '\r' && *str != '\f')
             break;
         str++;
         length--;

@@ -5,6 +5,7 @@
 #include "ui_formquery.h"
 #include "widgets/controlmssearchoption.h"
 #include "widgets/controlqueryfield.h"
+#include "widgets/formmetaboliteviewer.h"
 #include "threads/hmdbqueryworker.h"
 #include "utils/stdc.h"
 
@@ -25,6 +26,7 @@ FormQuery::FormQuery(QWidget *parent) :
     database = nullptr;
     widgetMSSearchOption = nullptr;
     listQueryField = new ControlQueryField();
+    viewer = nullptr;
 
     ui->widgetSearchOption->setCurrentIndex(HMDB_QUERY_TYPE_ID);
     ui->textMSMSPeaks->setPlaceholderText(
@@ -35,6 +37,8 @@ FormQuery::FormQuery(QWidget *parent) :
 
     connect(ui->frameResult, SIGNAL(fieldListRequested()),
             this, SLOT(onFieldListRequested()));
+    connect(ui->frameResult, SIGNAL(showDetailsRequested(QString)),
+            this, SLOT(onResultDetailsRequested(QString)));
 }
 
 FormQuery::~FormQuery()
@@ -235,7 +239,6 @@ void FormQuery::stopQuery()
     ui->progressQuery->setRange(0, 100);
 }
 
-
 bool FormQuery::parsePeakList (QByteArray content,
                                QList<double>& mzList,
                                QList<double>& intensityList)
@@ -303,6 +306,18 @@ void FormQuery::onFieldListRequested()
 {
     listQueryField->move(QCursor::pos());
     listQueryField->show();
+}
+
+void FormQuery::onResultDetailsRequested(QString ID)
+{
+    if (!viewer)
+    {
+        viewer = new FormMetaboliteViewer();
+        viewer->setDatabase(dataDir);
+    }
+    viewer->showMetabolite(ID);
+    viewer->show();
+    viewer->raise();
 }
 
 void FormQuery::onQueryFinished(bool successful)

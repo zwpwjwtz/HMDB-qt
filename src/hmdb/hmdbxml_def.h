@@ -8,6 +8,8 @@
 #define HMDBXML_LIST_ENTRY_ID_BEGIN "<accession>"
 #define HMDBXML_LIST_ENTRY_ID_END   "</accession>"
 
+#define HMDBXML_ENTRY_NAME_METABOLITE   "metabolite"
+
 #define HMDBXML_ENTRY_PROP_ID           "accession"
 #define HMDBXML_ENTRY_PROP_NAME         "name"
 #define HMDBXML_ENTRY_PROP_FORMULAR     "chemical_formula"
