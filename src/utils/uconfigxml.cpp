@@ -316,7 +316,7 @@ int UconfigXMLPrivate::freadEntry(FILE* file,
                     tempSubentry.reset();
                     tempSubentry.setType(UconfigXML::TextEntry);
                     tempSubentry.addKey(&tempKey);
-                    entry.addSubentry(&tempSubentry);
+                    entry.appendSubentry(&tempSubentry);
                 }
                 buffer.clear();
             }
@@ -365,14 +365,14 @@ int UconfigXMLPrivate::freadEntry(FILE* file,
                     if (retValue > 0)
                     {
                         tempSubentry.setType(UconfigXML::NormalEntry);
-                        entry.addSubentry(&tempSubentry);
+                        entry.appendSubentry(&tempSubentry);
                         parsedLen += retValue;
                     }
                 }
             }
             else
             {
-                entry.addSubentry(&tempSubentry);
+                entry.appendSubentry(&tempSubentry);
                 parsedLen += retValue;
             }
         }
