@@ -32,7 +32,6 @@ DialogBatchQuery::DialogBatchQuery(QWidget *parent) :
 void DialogBatchQuery::setDataDirectory(QString dir)
 {
     dataDir = dir;
-    ui->textDatabase->setText(dataDir);
 }
 
 DialogBatchQuery::~DialogBatchQuery()
@@ -45,6 +44,8 @@ DialogBatchQuery::~DialogBatchQuery()
 void DialogBatchQuery::showEvent(QShowEvent* event)
 {
     Q_UNUSED(event)
+    if (!dataDir.isEmpty())
+        ui->textDatabase->setText(dataDir);
     if (!(searchEngine && searchEngine->isRunning()))
         restart();
 }
@@ -166,6 +167,8 @@ bool DialogBatchQuery::launchQuery()
         if (searchEngine->status() == HmdbQueryStatus::Working)
             searchEngine->stop();
     }
+
+    dataDir = ui->textDatabase->text();
     searchEngine->setDataDirectory(dataDir.toLocal8Bit().constData());
     searchEngine->setSourcePath(
                 ui->textSourcePath->text().toLocal8Bit().constData());
@@ -224,9 +227,10 @@ bool DialogBatchQuery::launchQuery()
             QStringList massModification, massModificationNames;
             for (i=0; i<indexList.length(); i++)
             {
-                massModification.push_back(massModificationList->mz(i));
+                massModification.push_back(
+                                massModificationList->mz(indexList[i]));
                 massModificationNames.push_back(
-                                            massModificationList->formula(i));
+                                massModificationList->formula(indexList[i]));
             }
             searchEngine->setOption(HMDB_QUERY_OPTION_MASS_MODIFICATION,
                            massModification.join(HMDB_QUERY_OPTION_FIELD_SEP)
@@ -311,7 +315,7 @@ void DialogBatchQuery::on_buttonSelectTargetPath_clicked()
 
 void DialogBatchQuery::on_buttonViewResult_clicked()
 {
-    QDesktopServices::openUrl(ui->textTargetPath->text().prepend("file:///"));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(ui->textTargetPath->text()));
 }
 
 void DialogBatchQuery::on_DialogBatchQuery_currentIdChanged(int id)
@@ -339,5 +343,5 @@ void DialogBatchQuery::on_buttonSelectDatabase_clicked()
                                               "Select a database directory",
                                               dataDir);
     if (!newDir.isEmpty())
-        setDataDirectory(newDir);
+        ui->textDatabase->setText(newDir);
 }
