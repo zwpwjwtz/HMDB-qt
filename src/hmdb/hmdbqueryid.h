@@ -16,10 +16,10 @@ public:
     HmdbQueryID(const char* dataDir);
     virtual ~HmdbQueryID();
 
-    void setDatabase(const char* path);
+    virtual void setDatabase(const char* path);
 
-    bool buildIndex();
-    bool existIndex();
+    virtual bool buildIndex();
+    virtual bool existIndex();
 
     bool query(const HmdbQueryIDConditions& criteria,
                HmdbQueryIndexRecord& result);

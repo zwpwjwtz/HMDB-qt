@@ -33,10 +33,10 @@ public:
     HmdbQueryMassSpectrum(const char* dataDir);
     virtual ~HmdbQueryMassSpectrum();
 
-    void setDatabase(const char* path);
+    virtual void setDatabase(const char* path);
 
-    bool buildIndex();
-    bool existIndex();
+    virtual bool buildIndex();
+    virtual bool existIndex();
 
     bool query(const HmdbQueryMassSpectrumConditions& criteria,
                HmdbQueryMassSpectrumRecord& result);

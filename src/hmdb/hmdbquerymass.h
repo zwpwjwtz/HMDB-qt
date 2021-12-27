@@ -18,10 +18,10 @@ public:
     HmdbQueryMass(const char* dataDir);
     virtual ~HmdbQueryMass();
 
-    void setDatabase(const char* path);
+    virtual void setDatabase(const char* path);
 
-    bool buildIndex();
-    bool existIndex();
+    virtual bool buildIndex();
+    virtual bool existIndex();
 
     bool query(const HmdbQueryMassConditions& criteria,
                HmdbQueryIndexRecord& result);

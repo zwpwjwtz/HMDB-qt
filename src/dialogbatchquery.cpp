@@ -46,8 +46,6 @@ void DialogBatchQuery::showEvent(QShowEvent* event)
     Q_UNUSED(event)
     if (!dataDir.isEmpty())
         ui->textDatabase->setText(dataDir);
-    if (!(searchEngine && searchEngine->isRunning()))
-        restart();
 }
 
 bool DialogBatchQuery::validateCurrentPage()
@@ -59,16 +57,23 @@ bool DialogBatchQuery::validateCurrentPage()
             {
                 QMessageBox::warning(this, "Missing database",
                                      "Please select a database for query.");
+                ui->textDatabase->setFocus();
                 return false;
             }
             break;
         case PageSelectFile:
-            if (ui->textSourcePath->text().isEmpty() ||
-                ui->textTargetPath->text().isEmpty())
+            if (ui->textSourcePath->text().isEmpty())
             {
                 QMessageBox::warning(this, "Missing fields",
-                                     "Please select a source data file "
-                                     "and the target file.");
+                                     "Please select a source data file.");
+                ui->textSourcePath->setFocus();
+                return false;
+            }
+            if (ui->textTargetPath->text().isEmpty())
+            {
+                QMessageBox::warning(this, "Missing fields",
+                                     "Please select a target file.");
+                ui->textTargetPath->setFocus();
                 return false;
             }
             break;
@@ -108,8 +113,10 @@ void DialogBatchQuery::done(int r)
                 return;
         }
         stopQuery();
-        hide();
     }
+    else
+        close();
+    QWizard::done(r);
 }
 
 void DialogBatchQuery::resetQueryFields()

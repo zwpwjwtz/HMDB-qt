@@ -18,8 +18,8 @@ public:
 
     void setDatabase(const char* path);
 
-    bool buildIndex();
-    bool existIndex();
+    virtual bool buildIndex();
+    virtual bool existIndex();
 
     bool query(const HmdbQueryNameConditions& criteria,
                HmdbQueryIndexRecord& result);

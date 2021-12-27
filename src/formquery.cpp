@@ -39,6 +39,12 @@ FormQuery::FormQuery(QWidget *parent) :
             this, SLOT(onFieldListRequested()));
     connect(ui->frameResult, SIGNAL(showDetailsRequested(QString)),
             this, SLOT(onResultDetailsRequested(QString)));
+    connect(ui->textQueryID, SIGNAL(returnPressed()),
+            this, SLOT(on_buttonQueryID_clicked()));
+    connect(ui->textQueryName, SIGNAL(returnPressed()),
+            this, SLOT(on_buttonQueryName_clicked()));
+    connect(ui->textMass, SIGNAL(returnPressed()),
+            this, SLOT(on_buttonQueryMass_clicked()));
 }
 
 FormQuery::~FormQuery()
@@ -260,13 +266,13 @@ bool FormQuery::parsePeakList (QByteArray content,
         pos1 = pos2 + 1;
 
         if (buffer.contains('\t'))
-            fieldList = buffer.split('\t', QString::SkipEmptyParts);
+            fieldList = buffer.split('\t', Qt::SkipEmptyParts);
         else if (buffer.contains(','))
-            fieldList = buffer.split(',', QString::SkipEmptyParts);
+            fieldList = buffer.split(',', Qt::SkipEmptyParts);
         else if (buffer.contains(';'))
-            fieldList = buffer.split(';', QString::SkipEmptyParts);
+            fieldList = buffer.split(';', Qt::SkipEmptyParts);
         else
-            fieldList = buffer.split(' ', QString::SkipEmptyParts);
+            fieldList = buffer.split(' ', Qt::SkipEmptyParts);
         if (fieldList.length() < 1)
             continue;
 
@@ -354,14 +360,16 @@ void FormQuery::on_buttonSetDatabase_clicked()
 
 void FormQuery::on_buttonQueryID_clicked()
 {
-    if (ui->textQueryID->text().isEmpty())
+    QString ID = ui->textQueryID->text().trimmed();
+    ui->textQueryID->setText(ID);
+    if (ID.isEmpty())
         return;
 
     if (!checkDatabase())
         return;
 
     showQueryStart(HMDB_QUERY_TYPE_ID);
-    database->queryByID(ui->textQueryID->text());
+    database->queryByID(ID);
     startQuery();
 }
 
@@ -413,14 +421,16 @@ void FormQuery::on_buttonQueryMass_clicked()
 
 void FormQuery::on_buttonQueryName_clicked()
 {
-    if (ui->textQueryName->text().isEmpty())
+    QString name = ui->textQueryID->text().trimmed();
+    ui->textQueryName->setText(name);
+    if (name.isEmpty())
         return;
 
     if (!checkDatabase())
         return;
 
     showQueryStart(HMDB_QUERY_TYPE_NAME);
-    database->queryByName(ui->textQueryName->text());
+    database->queryByName(name);
     startQuery();
 }
 
