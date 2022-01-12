@@ -421,7 +421,7 @@ void FormQuery::on_buttonQueryMass_clicked()
 
 void FormQuery::on_buttonQueryName_clicked()
 {
-    QString name = ui->textQueryID->text().trimmed();
+    QString name = ui->textQueryName->text().trimmed();
     ui->textQueryName->setText(name);
     if (name.isEmpty())
         return;

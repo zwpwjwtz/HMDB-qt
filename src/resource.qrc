@@ -8,5 +8,6 @@
         <file>icons/globe.png</file>
         <file>icons/item.png</file>
         <file>icons/view-details.png</file>
+        <file>icons/HMDB-qt.png</file>
     </qresource>
 </RCC>
