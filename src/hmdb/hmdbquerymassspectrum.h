@@ -50,14 +50,6 @@ private:
                                     const char* spectrumID,
                                     const char* dataDir);
 
-    static bool getID(const char* filename, char*& ID);
-    static bool getSpectrumID(const char* filename, char*& ID);
-    static bool getPolarity(const char* filename, int& polarity);
-    static bool getPeakMZList(const char* filename,
-                              std::vector<double>& mzList);
-    static bool getPeakIntensityList(const char* filename,
-                                     std::vector<double>& intensityList);
-
     template <typename T>
     static void getOrder(const std::vector<T> valueList,
                          std::vector<int>& indexList,

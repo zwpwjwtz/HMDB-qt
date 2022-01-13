@@ -1,9 +1,9 @@
 #include <cstring>
 #include <cstdio>
-#include <cstdlib>
 #include <cmath>
 #include <algorithm>
 #include "hmdbquerymassspectrum.h"
+#include "hmdbmassspectrum.h"
 #include "hmdb_msms_xml_def.h"
 #include "utils/filesystem.h"
 #include "utils/stdc.h"
@@ -82,85 +82,86 @@ bool HmdbQueryMassSpectrum::buildIndex()
     auto dataFileList = utils_listDirectoryFiles(dataDir);
 
     // Write entries
-    char* ID;  // Main ID of a metabolite in HMDB
-    char* spectrumID;
-    char dataFilePath[HMDB_QUERY_INDEX_MS_PATH_MAXLEN];
+    std::string ID;  // Main ID of a metabolite in HMDB
+    std::string spectrumID;
+    std::string dataFilePath;
     char buffer[HMDB_QUERY_INDEX_MS_ENTRY_SIZE];
     int pos;
-    int polarity;
+    HmdbMassSpectrumPolarity polarity;
     int propertyBits;
     int massListLength;
     int j;
+    HmdbMassSpectrum spectrum;
     std::vector<int> peakOrders;
-    std::vector<double> mzList, intensityList;
-    mzList.reserve(HMDB_QUERY_INDEX_MS_PEAKS_MAX);
+    std::vector<double> mz, intensities;
     for (auto i=dataFileList.cbegin(); i!=dataFileList.cend(); i++)
     {
-        if (strstr((*i).c_str(), HMDB_MSMS_XML_FILENAME_SUFFIX))
+        if (!strstr((*i).c_str(), HMDB_MSMS_XML_FILENAME_SUFFIX))
+            continue;
+
+        // This is a spectrum data (XML) file
+        // See if it contains all the required information
+        dataFilePath.assign(dataDir).append("/").append(*i);
+        if (!spectrum.open(dataFilePath) ||
+            (ID = spectrum.metaboliteID()).empty() ||
+            (spectrumID = spectrum.spectrumID()).empty() ||
+            (polarity = spectrum.polarity())
+                      == HmdbMassSpectrumPolarity::Unknown ||
+            (mz = spectrum.mzList()).empty())
         {
-            // This is a spectrum data (XML) file
-            // See if it contains all the required information
-            dataFilePath[0] = '\0';
-            strcpy(dataFilePath, dataDir);
-            strcat(dataFilePath, "/");
-            strcat(dataFilePath, (*i).c_str());
-            if (!getID(dataFilePath, ID) ||
-                !getSpectrumID(dataFilePath, spectrumID) ||
-                !getPolarity(dataFilePath, polarity) ||
-                !getPeakMZList(dataFilePath, mzList))
-            {
-                // No required information found; skip it
-                continue;
-            }
-
-            // Try to get peak intensities
-            if (getPeakIntensityList(dataFilePath, intensityList))
-            {
-                // Sort peaks according their intensities in desceding order
-                getOrder(intensityList, peakOrders, true);
-            }
-            else
-            {
-                // No intensity provided; sort m/z in desceding order
-                getOrder(mzList, peakOrders, true);
-            }
-
-            // Concatenate all information to a record
-            memset(buffer, 0, HMDB_QUERY_INDEX_MS_ENTRY_SIZE);
-            // The metabolite ID
-            strncpy(buffer, ID, HMDB_QUERY_INDEX_MS_METABOLITE_ID_SIZE);
-            pos = HMDB_QUERY_INDEX_MS_METABOLITE_ID_SIZE;
-            // The spectrum ID
-            strncpy(&buffer[pos], spectrumID,
-                    HMDB_QUERY_INDEX_MS_SPECTRUM_ID_SIZE);
-            pos += HMDB_QUERY_INDEX_MS_SPECTRUM_ID_SIZE;
-            // The properties (polarity, etc.)
-            propertyBits = HMDB_QUERY_INDEX_MS_PROPERTY_NONE | polarity;
-            memcpy(&buffer[pos], &propertyBits,
-                   HMDB_QUERY_INDEX_MS_PROPERTY_SIZE);
-            pos += HMDB_QUERY_INDEX_MS_PROPERTY_SIZE;
-            // The peak list length
-            massListLength = mzList.size() > HMDB_QUERY_INDEX_MS_PEAKS_MAX ?
-                             HMDB_QUERY_INDEX_MS_PEAKS_MAX :
-                             mzList.size();
-            memcpy(&buffer[pos], &massListLength,
-                   HMDB_QUERY_INDEX_MS_PEAKS_COUNT_SIZE);
-            pos += HMDB_QUERY_INDEX_MS_PEAKS_COUNT_SIZE;
-            // The m/z list
-            // N.B.: Limited m/z values can be stored because of
-            //       the limited space of each index entry
-            for (j=0; j<massListLength; j++)
-            {
-                memcpy(&buffer[pos], &mzList[peakOrders[j]],
-                       HMDB_QUERY_INDEX_MS_PEAKS_MZ_SIZE);
-                pos += HMDB_QUERY_INDEX_MS_PEAKS_MZ_SIZE;
-            }
-
-            // Write the record
-            fwrite(buffer, HMDB_QUERY_INDEX_MS_ENTRY_SIZE, 1, f);
-            delete[] ID;
-            delete[] spectrumID;
+            // No required information found; skip it
+            continue;
         }
+
+        // Try to get peak intensities
+        intensities = spectrum.intensityList();
+        if (!intensities.empty())
+        {
+            // Sort peaks according their intensities in desceding order
+            getOrder(intensities, peakOrders, true);
+        }
+        else
+        {
+            // No intensity provided; sort m/z in desceding order
+            getOrder(mz, peakOrders, true);
+        }
+
+        // Concatenate all information to a record
+        memset(buffer, 0, HMDB_QUERY_INDEX_MS_ENTRY_SIZE);
+        // The metabolite ID
+        strncpy(buffer, ID.c_str(), HMDB_QUERY_INDEX_MS_METABOLITE_ID_SIZE);
+        pos = HMDB_QUERY_INDEX_MS_METABOLITE_ID_SIZE;
+        // The spectrum ID
+        strncpy(&buffer[pos], spectrumID.c_str(),
+                HMDB_QUERY_INDEX_MS_SPECTRUM_ID_SIZE);
+        pos += HMDB_QUERY_INDEX_MS_SPECTRUM_ID_SIZE;
+        // The properties (polarity, etc.)
+        if (polarity == HmdbMassSpectrumPolarity::Negative)
+            propertyBits = HMDB_QUERY_INDEX_MS_PROPERTY_POLAR_NEGATIVE;
+        else
+            propertyBits = HMDB_QUERY_INDEX_MS_PROPERTY_POLAR_POSITIVE;
+        memcpy(&buffer[pos], &propertyBits,
+               HMDB_QUERY_INDEX_MS_PROPERTY_SIZE);
+        pos += HMDB_QUERY_INDEX_MS_PROPERTY_SIZE;
+        // The peak list length
+        massListLength = mz.size() > HMDB_QUERY_INDEX_MS_PEAKS_MAX ?
+                    HMDB_QUERY_INDEX_MS_PEAKS_MAX :
+                    mz.size();
+        memcpy(&buffer[pos], &massListLength,
+               HMDB_QUERY_INDEX_MS_PEAKS_COUNT_SIZE);
+        pos += HMDB_QUERY_INDEX_MS_PEAKS_COUNT_SIZE;
+        // The m/z list
+        // N.B.: Limited m/z values can be stored because of
+        //       the limited space of each index entry
+        for (j=0; j<massListLength; j++)
+        {
+            memcpy(&buffer[pos], &mz[peakOrders[j]],
+                    HMDB_QUERY_INDEX_MS_PEAKS_MZ_SIZE);
+            pos += HMDB_QUERY_INDEX_MS_PEAKS_MZ_SIZE;
+        }
+
+        // Write the record
+        fwrite(buffer, HMDB_QUERY_INDEX_MS_ENTRY_SIZE, 1, f);
     }
 
     fclose(f);
@@ -257,12 +258,15 @@ HmdbQueryMassSpectrum::query(const HmdbQueryMassSpectrumConditions& criteria,
     // Calculate matching score for each matched spectrum
     // Peak intensities are used for a fine matching
     std::string dataFilePath;
+    HmdbMassSpectrum spectrum;
     auto i = matchedSpectrumID.cbegin();
     for (auto j=matchedID.cbegin(); j!=matchedID.cend(); j++)
     {
         getSpectrumPathByID(dataFilePath, (*j).c_str(), (*i).c_str(), dataDir);
-        getPeakMZList(dataFilePath.c_str(), mzList);
-        getPeakIntensityList(dataFilePath.c_str(), intensityList);
+        if (!spectrum.open(dataFilePath))
+            continue;
+        mzList = spectrum.mzList();
+        intensityList = spectrum.intensityList();
 
         // Use pointers of four arrays for fast accessing
         score.push_back(
@@ -327,139 +331,6 @@ bool HmdbQueryMassSpectrum::getSpectrumPathByID(std::string &path,
     // No matched filename
     path.clear();
     return false;
-}
-
-bool HmdbQueryMassSpectrum::getID(const char* filename, char*& ID)
-{
-    ID = nullptr;
-    FILE* f = fopen(filename, "rb");
-    if (!f)
-        return false;
-
-    utils_fseekstr(HMDB_MSMS_XML_ENTRY_ID_BEGIN, f);
-    utils_getdelim(&ID, nullptr,
-                   HMDB_MSMS_XML_ENTRY_ID_END, f);
-
-    fclose(f);
-    return ID != nullptr;
-}
-
-bool HmdbQueryMassSpectrum::getSpectrumID(const char* filename, char*& ID)
-{
-    ID = nullptr;
-    FILE* f = fopen(filename, "rb");
-    if (!f)
-        return false;
-
-    utils_fseekstr(HMDB_MSMS_XML_ENTRY_SPECTRUM_ID_BEGIN, f);
-    utils_getdelim(&ID, nullptr,
-                   HMDB_MSMS_XML_ENTRY_SPECTRUM_ID_END, f);
-
-    fclose(f);
-    return ID != nullptr;
-}
-
-bool HmdbQueryMassSpectrum::getPolarity(const char* filename, int& polarity)
-{
-    FILE* f = fopen(filename, "rb");
-    if (!f)
-        return false;
-
-    polarity = 0;
-
-    char* polarityString = nullptr;
-    utils_fseekstr(HMDB_MSMS_XML_ENTRY_POLARITY_BEGIN, f);
-    utils_getdelim(&polarityString, nullptr,
-                   HMDB_MSMS_XML_ENTRY_POLARITY_END, f);
-    if (!polarityString)
-    {
-        fclose(f);
-        return false;
-    }
-
-    char* polarityStringLowerCased =
-                    utils_tolower(polarityString, strlen(polarityString));
-    if (strncmp(polarityStringLowerCased, HMDB_MSMS_XML_ENTRY_POLARITY_NEGATIVE,
-                strlen(HMDB_MSMS_XML_ENTRY_POLARITY_NEGATIVE)) == 0)
-        polarity = HMDB_QUERY_INDEX_MS_PROPERTY_POLAR_NEGATIVE;
-    else
-        polarity = HMDB_QUERY_INDEX_MS_PROPERTY_POLAR_POSITIVE;
-
-    free(polarityStringLowerCased);
-    free(polarityString);
-    fclose(f);
-    return true;
-}
-
-bool HmdbQueryMassSpectrum::getPeakMZList(const char* filename,
-                                          std::vector<double>& mzList)
-{
-    FILE* f = fopen(filename, "rb");
-    if (!f)
-        return false;
-
-    char* buffer;
-    int readLength;
-    mzList.clear();
-    while (!feof(f) && mzList.size() < HMDB_QUERY_INDEX_MS_PEAKS_MAX)
-    {
-        if (utils_fseekstr(HMDB_MSMS_XML_ENTRY_MZ_BEGIN, f) <= 0)
-            break;
-
-        buffer = nullptr;
-        readLength = utils_getdelim(&buffer, nullptr,
-                                    HMDB_MSMS_XML_ENTRY_MZ_END, f);
-        if (readLength > 0)
-        {
-            mzList.push_back(atof(buffer));
-            free(buffer);
-        }
-        else
-        {
-            if (buffer)
-                free(buffer);
-            break;
-        }
-    }
-
-    fclose(f);
-    return true;
-}
-
-bool
-HmdbQueryMassSpectrum::getPeakIntensityList(const char *filename,
-                                            std::vector<double>& intensityList)
-{
-    FILE* f = fopen(filename, "rb");
-    if (!f)
-        return false;
-
-    char* buffer;
-    int readLength;
-    intensityList.clear();
-    while (!feof(f) && intensityList.size() < HMDB_QUERY_INDEX_MS_PEAKS_MAX)
-    {
-        if (utils_fseekstr(HMDB_MSMS_XML_ENTRY_INT_BEGIN, f) <= 0)
-            break;
-
-        buffer = nullptr;
-        readLength = utils_getdelim(&buffer, nullptr,
-                                    HMDB_MSMS_XML_ENTRY_INT_END, f);
-        if (readLength > 0)
-        {
-            intensityList.push_back(atof(buffer));
-            free(buffer);
-        }
-        else
-        {
-            if (buffer)
-                free(buffer);
-            break;
-        }
-    }
-
-    fclose(f);
-    return true;
 }
 
 template <typename T>

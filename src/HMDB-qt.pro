@@ -52,7 +52,8 @@ SOURCES += \
     threads/hmdbqueryworker.cpp \
     widgets/framequeryresult.cpp \
     widgets/controlqueryfield.cpp \
-    widgets/formmetaboliteviewer.cpp
+    widgets/formmetaboliteviewer.cpp \
+    hmdb/hmdbmassspectrum.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -86,7 +87,8 @@ HEADERS += \
     threads/hmdbqueryworker.h \
     widgets/framequeryresult.h \
     widgets/controlqueryfield.h \
-    widgets/formmetaboliteviewer.h
+    widgets/formmetaboliteviewer.h \
+    hmdb/hmdbmassspectrum.h
 
 FORMS += \
         mainwindow.ui \
