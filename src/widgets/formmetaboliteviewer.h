@@ -8,6 +8,7 @@ class QStandardItem;
 class QStandardItemModel;
 class UconfigKeyObject;
 class UconfigEntryObject;
+class FrameSpectrumViewer;
 
 namespace Ui {
 class FormMetaboliteViewer;
@@ -22,6 +23,7 @@ public:
     ~FormMetaboliteViewer();
 
     bool setDatabase(const QString& path);
+    bool setMSMSDatabase(const QString& path);
     bool showMetabolite(const QString& ID);
 
 protected:
@@ -29,7 +31,9 @@ protected:
 
 private:
     Ui::FormMetaboliteViewer *ui;
+    FrameSpectrumViewer* spectrumView;
     QString dataPath;
+    QString msmsDataPath;
     QList<QString> IDList;
 
     void loadEntry(QStandardItem* parent, const UconfigEntryObject& entry);
@@ -46,6 +50,7 @@ private:
 
 private slots:
     void on_tabWidget_tabCloseRequested(int index);
+    void on_treeView_doubleClicked(const QModelIndex& index);
 
 };
 

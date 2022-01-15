@@ -1,7 +1,9 @@
 #include <QStandardItemModel>
 #include <QTreeView>
+#include <QMessageBox>
 #include "formmetaboliteviewer.h"
 #include "ui_formmetaboliteviewer.h"
+#include "framespectrumviewer.h"
 #include "hmdb/hmdbxml_def.h"
 #include "utils/filesystem.h"
 #include "utils/uconfigxml.h"
@@ -13,6 +15,7 @@ FormMetaboliteViewer::FormMetaboliteViewer(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FormMetaboliteViewer)
 {
+    spectrumView = nullptr;
     ui->setupUi(this);
 }
 
@@ -39,6 +42,15 @@ bool FormMetaboliteViewer::setDatabase(const QString& path)
         return false;
 
     dataPath = path;
+    return true;
+}
+
+bool FormMetaboliteViewer::setMSMSDatabase(const QString& path)
+{
+    if (!utils_isDirectory(path.toLocal8Bit().constData()))
+        return false;
+
+    msmsDataPath = path;
     return true;
 }
 
@@ -82,6 +94,8 @@ bool FormMetaboliteViewer::showMetabolite(const QString& ID)
     newView->setModel(newModel);
     ui->tabWidget->addTab(newView, ID);
     IDList.push_back(ID);
+    connect(newView, SIGNAL(doubleClicked(const QModelIndex&)),
+            this, SLOT(on_treeView_doubleClicked(const QModelIndex&)));
 
     // Switch to the new tab
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
@@ -240,4 +254,48 @@ void FormMetaboliteViewer::on_tabWidget_tabCloseRequested(int index)
     delete model;
 
     IDList.removeAt(index);
+}
+
+void FormMetaboliteViewer::on_treeView_doubleClicked(const QModelIndex& index)
+{
+    // See if it is a spectrum entry
+    QString entryText = index.data().toString();
+    if (entryText == HMDBXML_ENTRY_PROP_SPECTRUM)
+    {
+        // See if it is a MS/MS spectrum
+        QModelIndex subentryIndex = index.model()->index(0, 0, index);
+        if (!subentryIndex.data().toString().contains(HMDBXML_ENTRY_VALUE_MSMS))
+        {
+            QMessageBox::information(this, "Spectrum not support",
+                                     "Spectrum type not supported by viewer.");
+            return;
+        }
+
+        subentryIndex = subentryIndex.siblingAtRow(1);
+        QString spectrumID = subentryIndex.data().toString();
+        spectrumID =
+            spectrumID.mid(spectrumID.indexOf(HMDBXML_ENTRY_PROP_SPECTRUMID) +
+                           strlen(HMDBXML_ENTRY_PROP_SPECTRUMID) + 1)
+                      .trimmed();
+
+        // Show the mass spectrum viewer
+        if (msmsDataPath.isEmpty())
+            return;
+        if (!spectrumView)
+            spectrumView = new FrameSpectrumViewer();
+        spectrumView->setDatabase(msmsDataPath);
+        spectrumView->clear();
+        QString metaboliteID(IDList[ui->tabWidget->currentIndex()]);
+        if (!spectrumView->load(metaboliteID, spectrumID))
+        {
+            QMessageBox::information(this, "Spectrum not exists",
+                                     QString("The data file of the spectrum "
+                                             "(ID %1) cannot be found. \n"
+                                             "Please check your database.")
+                                            .arg(spectrumID));
+            return;
+        }
+        spectrumView->setTitle(metaboliteID);
+        spectrumView->show();
+    }
 }

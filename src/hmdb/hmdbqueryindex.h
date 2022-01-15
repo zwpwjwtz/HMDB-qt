@@ -30,9 +30,6 @@ public:
 
     bool query(const HmdbQueryIndexConditions& criteria,
                HmdbQueryIndexRecord& result);
-
-protected:
-    static char* getIDByFilename(const char* filename);
 };
 
 #endif // HMDBQUERYINDEX_H

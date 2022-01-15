@@ -317,10 +317,9 @@ void FormQuery::onFieldListRequested()
 void FormQuery::onResultDetailsRequested(QString ID)
 {
     if (!viewer)
-    {
         viewer = new FormMetaboliteViewer();
-        viewer->setDatabase(dataDir);
-    }
+    viewer->setDatabase(dataDir);
+    viewer->setMSMSDatabase(msmsDataDir);
     viewer->showMetabolite(ID);
     viewer->show();
     viewer->raise();

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include "hmdbquerymassspectrum.h"
+#include "hmdbdatabase.h"
 #include "hmdbmassspectrum.h"
 #include "hmdb_msms_xml_def.h"
 #include "utils/filesystem.h"
@@ -257,14 +258,21 @@ HmdbQueryMassSpectrum::query(const HmdbQueryMassSpectrumConditions& criteria,
 
     // Calculate matching score for each matched spectrum
     // Peak intensities are used for a fine matching
-    std::string dataFilePath;
+    char* dataFilePath;
     HmdbMassSpectrum spectrum;
     auto i = matchedSpectrumID.cbegin();
     for (auto j=matchedID.cbegin(); j!=matchedID.cend(); j++)
     {
-        getSpectrumPathByID(dataFilePath, (*j).c_str(), (*i).c_str(), dataDir);
-        if (!spectrum.open(dataFilePath))
+        dataFilePath = HmdbDatabase::getMSMSPathByID((*j).c_str(),
+                                                     (*i).c_str(),
+                                                     dataDir);
+        if (!dataFilePath)
             continue;
+        if (!spectrum.open(dataFilePath))
+        {
+            delete dataFilePath;
+            continue;
+        }
         mzList = spectrum.mzList();
         intensityList = spectrum.intensityList();
 
@@ -281,6 +289,7 @@ HmdbQueryMassSpectrum::query(const HmdbQueryMassSpectrumConditions& criteria,
                           intensityList.size() > 0 ?
                               intensityList.data() : nullptr));
         i++;
+        delete dataFilePath;
     }
 
     // Dump all result to the target struct
@@ -298,39 +307,6 @@ HmdbQueryMassSpectrum::query(const HmdbQueryMassSpectrumConditions& criteria,
 
     fclose(f);
     return true;
-}
-
-bool HmdbQueryMassSpectrum::getSpectrumPathByID(std::string &path,
-                                                const char* ID,
-                                                const char* spectrumID,
-                                                const char* dataDir)
-{
-    path = dataDir;
-
-    // Try the first combination
-    path.append("/")
-        .append(ID)
-        .append(HMDB_MSMS_XML_FILENAME_ID_SEP2)
-        .append(spectrumID)
-        .append(HMDB_MSMS_XML_FILENAME_END1)
-        .append(HMDB_MSMS_XML_FILENAME_SUFFIX);
-    if (utils_isFile(path.c_str()))
-        return true;
-
-    // Try the second one
-    path = dataDir;
-    path.append("/")
-        .append(ID)
-        .append(HMDB_MSMS_XML_FILENAME_ID_SEP2)
-        .append(spectrumID)
-        .append(HMDB_MSMS_XML_FILENAME_END2)
-        .append(HMDB_MSMS_XML_FILENAME_SUFFIX);
-    if (utils_isFile(path.c_str()))
-        return true;
-
-    // No matched filename
-    path.clear();
-    return false;
 }
 
 template <typename T>

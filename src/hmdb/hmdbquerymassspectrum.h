@@ -45,11 +45,6 @@ private:
     const char* dataDir;
     char* indexFileName;
 
-    static bool getSpectrumPathByID(std::string& path,
-                                    const char* ID,
-                                    const char* spectrumID,
-                                    const char* dataDir);
-
     template <typename T>
     static void getOrder(const std::vector<T> valueList,
                          std::vector<int>& indexList,

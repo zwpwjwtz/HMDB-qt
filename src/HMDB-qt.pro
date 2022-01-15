@@ -40,7 +40,6 @@ SOURCES += \
     utils/uconfigxml.cpp \
     hmdb/hmdbqueryid.cpp \
     hmdb/hmdbquerymass.cpp \
-    hmdb/hmdbqueryindex.cpp \
     hmdb/hmdbqueryname.cpp \
     dialogbatchquery.cpp \
     hmdb/hmdbbatchquery.cpp \
@@ -53,7 +52,25 @@ SOURCES += \
     widgets/framequeryresult.cpp \
     widgets/controlqueryfield.cpp \
     widgets/formmetaboliteviewer.cpp \
-    hmdb/hmdbmassspectrum.cpp
+    hmdb/hmdbmassspectrum.cpp \
+    MPlot/MPlot.cpp \
+    MPlot/MPlotItem.cpp \
+    MPlot/MPlotMarker.cpp \
+    MPlot/MPlotSeries.cpp \
+    MPlot/MPlotSeriesData.cpp \
+    MPlot/MPlotAxis.cpp \
+    MPlot/MPlotAxisScale.cpp \
+    MPlot/MPlotLegend.cpp \
+    MPlot/MPlotAbstractTool.cpp \
+    MPlot/MPlotColorLegend.cpp \
+    MPlot/MPlotColorMap.cpp \
+    MPlot/MPlotImage.cpp \
+    MPlot/MPlotImageData.cpp \
+    MPlot/MPlotImageRangeDialog.cpp \
+    MPlot/MPlotWidget.cpp \
+    hmdb/hmdbdatabase.cpp \
+    widgets/framespectrumviewer.cpp \
+    widgets/verticallabel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -88,7 +105,26 @@ HEADERS += \
     widgets/framequeryresult.h \
     widgets/controlqueryfield.h \
     widgets/formmetaboliteviewer.h \
-    hmdb/hmdbmassspectrum.h
+    hmdb/hmdbmassspectrum.h \
+    MPlot/MPlot_global.h \
+    MPlot/MPlot.h \
+    MPlot/MPlotItem.h \
+    MPlot/MPlotMarker.h \
+    MPlot/MPlotSeries.h \
+    MPlot/MPlotSeriesData.h \
+    MPlot/MPlotAxis.h \
+    MPlot/MPlotAxisScale.h \
+    MPlot/MPlotLegend.h \
+    MPlot/MPlotAbstractTool.h \
+    MPlot/MPlotColorLegend.h \
+    MPlot/MPlotColorMap.h \
+    MPlot/MPlotImage.h \
+    MPlot/MPlotImageData.h \
+    MPlot/MPlotImageRangeDialog.h \
+    MPlot/MPlotWidget.h \
+    hmdb/hmdbdatabase.h \
+    widgets/framespectrumviewer.h \
+    widgets/verticallabel.h
 
 FORMS += \
         mainwindow.ui \
@@ -99,7 +135,8 @@ FORMS += \
     widgets/controlmssearchoption.ui \
     widgets/framequeryresult.ui \
     widgets/controlqueryfield.ui \
-    widgets/formmetaboliteviewer.ui
+    widgets/formmetaboliteviewer.ui \
+    widgets/framespectrumviewer.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

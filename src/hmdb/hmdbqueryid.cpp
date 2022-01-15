@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "hmdbqueryid.h"
+#include "hmdbdatabase.h"
 #include "hmdbxml_def.h"
 #include "utils/filesystem.h"
 #include "utils/stdc.h"
@@ -71,7 +72,7 @@ bool HmdbQueryID::buildIndex()
         if (strstr((*i).c_str(), HMDBXML_FILENAME_SUFFIX))
         {
             // This is a data (XML) file; add it to index
-            ID = getIDByFilename((*i).c_str());
+            ID = HmdbDatabase::getIDByFilename((*i).c_str());
             fputs(ID, f);
             fwrite(HMDB_QUERY_INDEX_ID_SEP_ENTRY, separatorLength, 1, f);
             delete[] ID;

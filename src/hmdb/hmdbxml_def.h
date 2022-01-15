@@ -20,6 +20,10 @@
 #define HMDBXML_ENTRY_PROP_INCHI        "inchi"
 #define HMDBXML_ENTRY_PROP_INCHIKEY     "inchikey"
 #define HMDBXML_ENTRY_PROP_STATE        "state"
+#define HMDBXML_ENTRY_PROP_SPECTRA      "spectra"
+#define HMDBXML_ENTRY_PROP_SPECTRUM     "spectrum"
+#define HMDBXML_ENTRY_PROP_SPECTRUMID   "spectrum_id"
 
+#define HMDBXML_ENTRY_VALUE_MSMS        "Specdb::MsMs"
 
 #endif // HMDBXML_DEF_H
