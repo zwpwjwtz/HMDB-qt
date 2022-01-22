@@ -68,6 +68,9 @@ SOURCES += \
     MPlot/MPlotImageData.cpp \
     MPlot/MPlotImageRangeDialog.cpp \
     MPlot/MPlotWidget.cpp \
+    MPlot/MPlotPoint.cpp \
+    MPlot/MPlotRectangle.cpp \
+    MPlot/MPlotTools.cpp \
     hmdb/hmdbdatabase.cpp \
     widgets/framespectrumviewer.cpp \
     widgets/verticallabel.cpp
@@ -122,6 +125,9 @@ HEADERS += \
     MPlot/MPlotImageData.h \
     MPlot/MPlotImageRangeDialog.h \
     MPlot/MPlotWidget.h \
+    MPlot/MPlotPoint.h \
+    MPlot/MPlotRectangle.h \
+    MPlot/MPlotTools.h \
     hmdb/hmdbdatabase.h \
     widgets/framespectrumviewer.h \
     widgets/verticallabel.h

@@ -4,6 +4,7 @@
 #include "hmdb/hmdbmassspectrum.h"
 #include "hmdb/hmdbxml_def.h"
 #include "MPlot/MPlotSeries.h"
+#include "MPlot/MPlotTools.h"
 #include "utils/filesystem.h"
 
 #define HMDB_SPECTRUM_VIEW_MZ_EPSILON  1E-5
@@ -27,6 +28,11 @@ FrameSpectrumViewer::FrameSpectrumViewer(QWidget *parent) :
     plot->background()->setBrush(QBrush(QColor(0x00F8F8F8)));
     plot->plotArea()->setBrush(QBrush(QColor(0x00FFFFFF)));
 
+    toolList.push_back(new MPlotDragZoomerTool());
+    toolList.push_back(new MPlotWheelZoomerTool());
+    for (int i=0; i<toolList.count(); i++)
+        plot->addTool(toolList[i]);
+
     ui->setupUi(this);
     ui->viewSpectrum->setPlot(plot);
     ui->labelAxisY->setText("Intensity");
@@ -36,6 +42,12 @@ FrameSpectrumViewer::~FrameSpectrumViewer()
 {
     clear();
     delete ui;
+
+    for (int i=0; i<toolList.count(); i++)
+    {
+        plot->removeTool(toolList[i]);
+        delete toolList[i];
+    }
     delete plot;
 }
 
@@ -77,7 +89,6 @@ bool FrameSpectrumViewer::load(QString metaboliteID, QString spectrumID)
     if (dataPath.isEmpty())
         return false;
 
-    auto temp = dataPath.toStdString().c_str();
     char* dataFilename =
             HmdbDatabase::getMSMSPathByID(metaboliteID.toStdString().c_str(),
                                           spectrumID.toStdString().c_str(),

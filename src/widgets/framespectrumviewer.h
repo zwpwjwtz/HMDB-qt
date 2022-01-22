@@ -7,6 +7,7 @@
 class MPlot;
 class MPlotSeriesBasic;
 class MPlotRealtimeModel;
+class MPlotAbstractTool;
 
 namespace Ui {
 class FrameSpectrumViewer;
@@ -37,6 +38,7 @@ private:
     MPlot* plot;
     QList<MPlotSeriesBasic*> layerList;
     QList<MPlotRealtimeModel*> dataList;
+    QList<MPlotAbstractTool*> toolList;
 
     void loadSpectrum(const std::vector<double>& mz,
                       const std::vector<double>& intensities);
