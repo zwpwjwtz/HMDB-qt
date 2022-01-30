@@ -28,13 +28,25 @@ FrameSpectrumViewer::FrameSpectrumViewer(QWidget *parent) :
     plot->background()->setBrush(QBrush(QColor(0x00F8F8F8)));
     plot->plotArea()->setBrush(QBrush(QColor(0x00FFFFFF)));
 
-    toolList.push_back(new MPlotDragZoomerTool());
-    toolList.push_back(new MPlotWheelZoomerTool());
+    toolList.push_back(new MPlotDragZoomerTool);
+    toolList.push_back(new MPlotWheelZoomerTool);
+    dataCursor = new MPlotDataPositionCursorTool(false);
+    toolList.push_back(dataCursor);
     for (int i=0; i<toolList.count(); i++)
         plot->addTool(toolList[i]);
+    dataCursor->setCursorVisibility(true);
+    dataCursor->setCursorMarker(MPlotMarkerShape::Cross);
+    dataCursor->setDataPositionIndicator(plot->axisScaleBottom(),
+                                         plot->axisScaleLeft());
+    connect(dataCursor, SIGNAL(positionChanged(const QPointF&)),
+            this, SLOT(onDataCursorPositionChanged(const QPointF&)));
 
     ui->setupUi(this);
     ui->viewSpectrum->setPlot(plot);
+    ui->viewSpectrum->installEventFilter(this);
+    ui->labelTitle->installEventFilter(this);
+    ui->labelAxisX->installEventFilter(this);
+    ui->labelAxisY->installEventFilter(this);
     ui->labelAxisY->setText("Intensity");
 }
 
@@ -61,6 +73,27 @@ void FrameSpectrumViewer::changeEvent(QEvent *e)
         default:
             break;
     }
+}
+
+void FrameSpectrumViewer::resizeEvent(QResizeEvent* event)
+{
+    Q_UNUSED(event)
+    ui->viewSpectrum->resize(ui->frameSpectrum->size());
+    ui->labelDataPosition->move(ui->frameSpectrum->width() / 10,
+                                ui->frameSpectrum->height() / 50);
+}
+
+bool FrameSpectrumViewer::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        if (obj == ui->viewSpectrum)
+            setDataCursorVisible(
+                dynamic_cast<QMouseEvent*>(event)->button() == Qt::LeftButton);
+        else
+            setDataCursorVisible(false);
+    }
+    return false;
 }
 
 bool FrameSpectrumViewer::setDatabase(const QString& path)
@@ -118,9 +151,16 @@ void FrameSpectrumViewer::setTitle(QString text)
     ui->labelTitle->setText(text);
 }
 
+void FrameSpectrumViewer::setDataCursorVisible(bool visible)
+{
+    dataCursor->setCursorVisibility(visible);
+    ui->labelDataPosition->setVisible(visible);
+}
+
 void FrameSpectrumViewer::loadSpectrum(const std::vector<double>& mz,
                                        const std::vector<double>& intensities)
 {
+    ui->labelDataPosition->clear();
     for (int i=0; i<mz.size(); i++)
     {
         // Plot each "peak" as a "delta function"
@@ -136,4 +176,10 @@ void FrameSpectrumViewer::loadSpectrum(const std::vector<double>& mz,
         layerList.push_back(layer);
         plot->addItem(layer);
     }
+}
+
+void FrameSpectrumViewer::onDataCursorPositionChanged(const QPointF& position)
+{
+    ui->labelDataPosition->setText(QString("(%1, %2)").arg(position.x())
+                                                      .arg(position.y()));
 }

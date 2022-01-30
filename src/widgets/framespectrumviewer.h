@@ -8,6 +8,7 @@ class MPlot;
 class MPlotSeriesBasic;
 class MPlotRealtimeModel;
 class MPlotAbstractTool;
+class MPlotDataPositionCursorTool;
 
 namespace Ui {
 class FrameSpectrumViewer;
@@ -28,9 +29,12 @@ public:
 
     void setLineColor(QColor color);
     void setTitle(QString text);
+    void setDataCursorVisible(bool visible);
 
 protected:
     void changeEvent(QEvent *e);
+    void resizeEvent(QResizeEvent* event);
+    bool eventFilter(QObject* obj, QEvent* event);
 
 private:
     Ui::FrameSpectrumViewer *ui;
@@ -39,9 +43,13 @@ private:
     QList<MPlotSeriesBasic*> layerList;
     QList<MPlotRealtimeModel*> dataList;
     QList<MPlotAbstractTool*> toolList;
+    MPlotDataPositionCursorTool* dataCursor;
 
     void loadSpectrum(const std::vector<double>& mz,
                       const std::vector<double>& intensities);
+
+private slots:
+    void onDataCursorPositionChanged(const QPointF& position);
 };
 
 #endif // FRAMESPECTRUMVIEWER_H
