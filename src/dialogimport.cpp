@@ -2,8 +2,9 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include "dialogimport.h"
-#include "threads/hmdbxmlimporterworker.h"
 #include "ui_dialogimport.h"
+#include "global.h"
+#include "threads/hmdbxmlimporterworker.h"
 
 
 DialogImport::DialogImport(QWidget *parent) :
@@ -113,7 +114,16 @@ void DialogImport::onImporterProgressed(double finishedPercent)
 void DialogImport::onImporterFinished(bool successful)
 {
     if (successful)
-        emit DirectoryChanged(ui->textImportDirectory->text());
+    {
+        if (QMessageBox::information(this, "Finished importing",
+                                 "Importing succeeded. "
+                                 "Would you like to set the imported database "
+                                 "as default database for query?",
+                                 QMessageBox::Yes | QMessageBox::No,
+                                 QMessageBox::Yes)
+                == QMessageBox::Yes)
+            appConfig.setMainDatabase(ui->textImportDirectory->text());
+    }
     else
         QMessageBox::critical(this, "Import failed",
                               "An error occurred during import.");

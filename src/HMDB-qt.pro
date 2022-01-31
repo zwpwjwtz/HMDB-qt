@@ -76,7 +76,9 @@ SOURCES += \
     hmdb/hmdbdatabase.cpp \
     widgets/framespectrumviewer.cpp \
     widgets/verticallabel.cpp \
-    dialogabout.cpp
+    dialogabout.cpp \
+    dialogconfig.cpp \
+    hmdbqtconfig.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -134,7 +136,10 @@ HEADERS += \
     hmdb/hmdbdatabase.h \
     widgets/framespectrumviewer.h \
     widgets/verticallabel.h \
-    dialogabout.h
+    dialogabout.h \
+    dialogconfig.h \
+    hmdbqtconfig.h \
+    global.h
 
 FORMS += \
         mainwindow.ui \
@@ -147,7 +152,8 @@ FORMS += \
     widgets/controlqueryfield.ui \
     widgets/formmetaboliteviewer.ui \
     widgets/framespectrumviewer.ui \
-    dialogabout.ui
+    dialogabout.ui \
+    dialogconfig.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

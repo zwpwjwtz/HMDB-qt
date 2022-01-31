@@ -20,9 +20,6 @@ public:
     explicit DialogBatchQuery(QWidget *parent = nullptr);
     ~DialogBatchQuery();
 
-public slots:
-    void setDataDirectory(QString dir);
-
 protected:
     enum WizardPage
     {

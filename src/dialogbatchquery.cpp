@@ -2,8 +2,9 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include "dialogbatchquery.h"
-#include "widgets/controlmassmodificationlist.h"
 #include "ui_dialogbatchquery.h"
+#include "global.h"
+#include "widgets/controlmassmodificationlist.h"
 #include "hmdb/hmdbxml_def.h"
 #include "threads/hmdbbatchqueryworker.h"
 #include "hmdb/hmdbqueryoptions.h"
@@ -29,11 +30,6 @@ DialogBatchQuery::DialogBatchQuery(QWidget *parent) :
     lastQuerySuccessful = false;
 }
 
-void DialogBatchQuery::setDataDirectory(QString dir)
-{
-    dataDir = dir;
-}
-
 DialogBatchQuery::~DialogBatchQuery()
 {
     stopQuery();
@@ -44,8 +40,7 @@ DialogBatchQuery::~DialogBatchQuery()
 void DialogBatchQuery::showEvent(QShowEvent* event)
 {
     Q_UNUSED(event)
-    if (!dataDir.isEmpty())
-        ui->textDatabase->setText(dataDir);
+    ui->textDatabase->setText(appConfig.mainDatabase());
 }
 
 bool DialogBatchQuery::validateCurrentPage()

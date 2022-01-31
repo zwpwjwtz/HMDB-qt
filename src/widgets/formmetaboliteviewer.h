@@ -22,8 +22,6 @@ public:
     explicit FormMetaboliteViewer(QWidget *parent = nullptr);
     ~FormMetaboliteViewer();
 
-    bool setDatabase(const QString& path);
-    bool setMSMSDatabase(const QString& path);
     bool showMetabolite(const QString& ID);
 
 protected:
@@ -32,8 +30,6 @@ protected:
 private:
     Ui::FormMetaboliteViewer *ui;
     FrameSpectrumViewer* spectrumView;
-    QString dataPath;
-    QString msmsDataPath;
     QList<QString> IDList;
 
     void loadEntry(QStandardItem* parent, const UconfigEntryObject& entry);

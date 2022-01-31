@@ -2,6 +2,8 @@
 #include <QUrl>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "global.h"
+#include "dialogconfig.h"
 
 #define HMDB_DOWNLOAD_URL    "https://hmdb.ca/downloads"
 
@@ -11,11 +13,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    connect(&windowImport, &DialogImport::DirectoryChanged,
-            &windowQuery,  &FormQuery::setDataDirectory);
-    connect(&windowImport, &DialogImport::DirectoryChanged,
-            &windowBatchQuery,  &DialogBatchQuery::setDataDirectory);
 }
 
 MainWindow::~MainWindow()
@@ -46,4 +43,9 @@ void MainWindow::on_buttonBatchQuery_clicked()
 void MainWindow::on_buttonAbout_clicked()
 {
     windowAbout.show();
+}
+
+void MainWindow::on_buttonConfigure_clicked()
+{
+    dialogConfig->show();
 }

@@ -26,6 +26,7 @@ private slots:
     void on_buttonQuery_clicked();
     void on_buttonBatchQuery_clicked();
     void on_buttonAbout_clicked();
+    void on_buttonConfigure_clicked();
 
 private:
     Ui::MainWindow *ui;

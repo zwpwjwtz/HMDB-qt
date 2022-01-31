@@ -61,6 +61,17 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="buttonConfigure">
+          <property name="text">
+           <string>Configure</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/icons/configure.png</normaloff>:/icons/configure.png</iconset>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>

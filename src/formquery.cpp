@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include "formquery.h"
 #include "ui_formquery.h"
+#include "global.h"
+#include "dialogconfig.h"
 #include "widgets/controlmssearchoption.h"
 #include "widgets/controlqueryfield.h"
 #include "widgets/formmetaboliteviewer.h"
@@ -89,13 +91,15 @@ bool FormQuery::connectDatabase()
 
 bool FormQuery::checkDatabase()
 {
+    QString dataDir = appConfig.mainDatabase();
     if (dataDir.isEmpty())
     {
         QMessageBox::critical(this, "Database not set",
                               "No database set yet. "
                               "Please choose the location for a imported database." 
                               );
-        on_buttonSetDatabase_clicked();
+        dialogConfig->exec();
+        dataDir = appConfig.mainDatabase();
     }
 
     if (!connectDatabase())
@@ -120,24 +124,21 @@ bool FormQuery::checkDatabase()
 
 bool FormQuery::checkMSMSDatabase()
 {
-    if (msmsDataDir.isEmpty())
+    QString dataDir = appConfig.msmsDatabase();
+    if (dataDir.isEmpty())
     {
         QMessageBox::critical(this, "MS/MS Database not set",
                               "No MS/MS database set yet. "
                               "Please choose the location for a imported database."
                               );
-        QString newDir = QFileDialog::getExistingDirectory(this,
-                                         "Select a database directory",
-                                          dataDir);
-        if (newDir.isEmpty())
-            return false;
-        msmsDataDir = newDir;
+        dialogConfig->exec();
+        dataDir = appConfig.msmsDatabase();
     }
 
     if (!connectDatabase())
         return false;
 
-    database->setDataDirectory(msmsDataDir, HmdbQuery::DatabaseType::MSMS);
+    database->setDataDirectory(dataDir, HmdbQuery::DatabaseType::MSMS);
     if (!database->isReady(HmdbQuery::DatabaseType::MSMS))
     {
         if (QMessageBox::question(this, "Database not indexed",
@@ -153,12 +154,6 @@ bool FormQuery::checkMSMSDatabase()
         return false;
     }
     return true;
-}
-
-void FormQuery::setDataDirectory(QString dir)
-{
-    dataDir = dir;
-    ui->textDatabase->setText(dataDir);
 }
 
 void FormQuery::showBuildingIndexStart()
@@ -318,8 +313,6 @@ void FormQuery::onResultDetailsRequested(QString ID)
 {
     if (!viewer)
         viewer = new FormMetaboliteViewer();
-    viewer->setDatabase(dataDir);
-    viewer->setMSMSDatabase(msmsDataDir);
     viewer->showMetabolite(ID);
     viewer->show();
     viewer->raise();
@@ -346,15 +339,6 @@ void FormQuery::onQueryFinished(bool successful)
 void FormQuery::on_comboBox_currentIndexChanged(int index)
 {
     ui->widgetSearchOption->setCurrentIndex(index);
-}
-
-void FormQuery::on_buttonSetDatabase_clicked()
-{
-    QString newDir = QFileDialog::getExistingDirectory(this,
-                                     "Select a database directory",
-                                      dataDir);
-    if (!newDir.isEmpty())
-        setDataDirectory(newDir);
 }
 
 void FormQuery::on_buttonQueryID_clicked()

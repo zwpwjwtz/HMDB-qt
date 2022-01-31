@@ -3,10 +3,10 @@
 #include <QMessageBox>
 #include "formmetaboliteviewer.h"
 #include "ui_formmetaboliteviewer.h"
-#include "framespectrumviewer.h"
+#include "global.h"
 #include "hmdb/hmdbxml_def.h"
-#include "utils/filesystem.h"
 #include "utils/uconfigxml.h"
+#include "widgets/framespectrumviewer.h"
 
 #define HMDB_VIEWER_TREEVIEW_TEXT_NONAME    "(No name)"
 
@@ -36,24 +36,6 @@ void FormMetaboliteViewer::changeEvent(QEvent *e)
     }
 }
 
-bool FormMetaboliteViewer::setDatabase(const QString& path)
-{
-    if (!utils_isDirectory(path.toLocal8Bit().constData()))
-        return false;
-
-    dataPath = path;
-    return true;
-}
-
-bool FormMetaboliteViewer::setMSMSDatabase(const QString& path)
-{
-    if (!utils_isDirectory(path.toLocal8Bit().constData()))
-        return false;
-
-    msmsDataPath = path;
-    return true;
-}
-
 bool FormMetaboliteViewer::showMetabolite(const QString& ID)
 {
     if (IDList.indexOf(ID) >= 0)
@@ -62,6 +44,15 @@ bool FormMetaboliteViewer::showMetabolite(const QString& ID)
         // switch to that tab directly
         ui->tabWidget->setCurrentIndex(IDList.indexOf(ID));
         return true;
+    }
+
+    QString dataPath = appConfig.mainDatabase();
+    if (dataPath.isEmpty())
+    {
+        QMessageBox::critical(this, "Database not set",
+                              "Please configure the path to the "
+                              "main database first.");
+        return false;
     }
 
     UconfigXML parser;
@@ -278,9 +269,16 @@ void FormMetaboliteViewer::on_treeView_doubleClicked(const QModelIndex& index)
                            strlen(HMDBXML_ENTRY_PROP_SPECTRUMID) + 1)
                       .trimmed();
 
-        // Show the mass spectrum viewer
+        QString msmsDataPath = appConfig.msmsDatabase();
         if (msmsDataPath.isEmpty())
+        {
+            QMessageBox::critical(this, "MS/MS database not set",
+                                  "Please configure the path to the "
+                                  "MS/MS database first.");
             return;
+        }
+
+        // Show the mass spectrum viewer
         if (!spectrumView)
             spectrumView = new FrameSpectrumViewer();
         spectrumView->setDatabase(msmsDataPath);
