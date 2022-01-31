@@ -5,6 +5,7 @@
 #include "dialogimport.h"
 #include "formquery.h"
 #include "dialogbatchquery.h"
+#include "dialogabout.h"
 
 
 namespace Ui {
@@ -24,12 +25,14 @@ private slots:
     void on_buttonDownload_clicked();
     void on_buttonQuery_clicked();
     void on_buttonBatchQuery_clicked();
+    void on_buttonAbout_clicked();
 
 private:
     Ui::MainWindow *ui;
     DialogImport windowImport;
     FormQuery windowQuery;
     DialogBatchQuery windowBatchQuery;
+    DialogAbout windowAbout;
 };
 
 #endif // MAINWINDOW_H

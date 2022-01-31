@@ -11,11 +11,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = HMDB-qt
 TEMPLATE = app
 
+VERSION = 2.0.0
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_DEPRECATED_WARNINGS APP_VERSION=\\\"$$VERSION\\\"
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -73,7 +75,8 @@ SOURCES += \
     MPlot/MPlotTools.cpp \
     hmdb/hmdbdatabase.cpp \
     widgets/framespectrumviewer.cpp \
-    widgets/verticallabel.cpp
+    widgets/verticallabel.cpp \
+    dialogabout.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -130,7 +133,8 @@ HEADERS += \
     MPlot/MPlotTools.h \
     hmdb/hmdbdatabase.h \
     widgets/framespectrumviewer.h \
-    widgets/verticallabel.h
+    widgets/verticallabel.h \
+    dialogabout.h
 
 FORMS += \
         mainwindow.ui \
@@ -142,7 +146,8 @@ FORMS += \
     widgets/framequeryresult.ui \
     widgets/controlqueryfield.ui \
     widgets/formmetaboliteviewer.ui \
-    widgets/framespectrumviewer.ui
+    widgets/framespectrumviewer.ui \
+    dialogabout.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

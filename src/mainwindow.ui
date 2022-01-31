@@ -18,40 +18,114 @@
     <normaloff>:/icons/HMDB-qt.png</normaloff>:/icons/HMDB-qt.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
     <item>
-     <widget class="QPushButton" name="buttonDownload">
-      <property name="text">
-       <string>Download HMDB</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="label_1">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Get ready</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonDownload">
+          <property name="text">
+           <string>Download HMDB</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/icons/globe.png</normaloff>:/icons/globe.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonImport">
+          <property name="text">
+           <string>Import database</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Query HMDB</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonQuery">
+          <property name="text">
+           <string>Single query</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/icons/edit-find.png</normaloff>:/icons/edit-find.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonBatchQuery">
+          <property name="text">
+           <string>Batch Query</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/icons/edit-find-multiple.png</normaloff>:/icons/edit-find-multiple.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="buttonImport">
+     <widget class="QPushButton" name="buttonAbout">
       <property name="text">
-       <string>Import HMDB</string>
+       <string>About this program</string>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonQuery">
-      <property name="text">
-       <string>Query HMDB</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="buttonBatchQuery">
-      <property name="text">
-       <string>Batch Query</string>
+      <property name="icon">
+       <iconset resource="resource.qrc">
+        <normaloff>:/icons/help-about.png</normaloff>:/icons/help-about.png</iconset>
       </property>
      </widget>
     </item>
    </layout>
-   <zorder>buttonBatchQuery</zorder>
-   <zorder>buttonDownload</zorder>
-   <zorder>buttonImport</zorder>
-   <zorder>buttonQuery</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

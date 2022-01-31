@@ -9,5 +9,9 @@
         <file>icons/item.png</file>
         <file>icons/view-details.png</file>
         <file>icons/HMDB-qt.png</file>
+        <file>icons/help-about.png</file>
+        <file>icons/configure.png</file>
+        <file>icons/edit-find.png</file>
+        <file>icons/edit-find-multiple.png</file>
     </qresource>
 </RCC>

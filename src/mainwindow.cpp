@@ -42,3 +42,8 @@ void MainWindow::on_buttonBatchQuery_clicked()
 {
     windowBatchQuery.show();
 }
+
+void MainWindow::on_buttonAbout_clicked()
+{
+    windowAbout.show();
+}
