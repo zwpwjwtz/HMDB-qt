@@ -161,4 +161,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    resource.qrc
+    resource.qrc \
+    translations.qrc
+
+TRANSLATIONS += \
+    translations/HMDB-qt_zh_CN.ts
+
+include(translation.pri)

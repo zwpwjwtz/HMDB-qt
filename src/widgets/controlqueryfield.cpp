@@ -50,6 +50,7 @@ void ControlQueryField::keyPressEvent(QKeyEvent* event)
 
 void ControlQueryField::showEvent(QShowEvent* event)
 {
+    Q_UNUSED(event)
     if (selectedFieldIDList.isEmpty())
         loadDefaultList();
     else

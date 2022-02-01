@@ -56,8 +56,8 @@ void ControlMSSearchOption::on_buttonOK_clicked()
     _massTolerance = ui->textMassTolerance->text().toDouble(&conversionOK);
     if (!conversionOK)
     {
-        QMessageBox::warning(this, "Invalid input",
-                             "The mass tolerance must be a numeric value.");
+        QMessageBox::warning(this, tr("Invalid input"),
+                             tr("The mass tolerance must be a numeric value."));
         return;
     }
     _relativeMassTolerance = ui->radioRelativeTolerance->isChecked();

@@ -60,6 +60,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="buttonView">
+       <property name="toolTip">
+        <string>Show details about selected metabolite</string>
+       </property>
        <property name="text">
         <string/>
        </property>

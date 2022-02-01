@@ -163,10 +163,10 @@ void FrameQueryResult::on_buttonOpenLink_clicked()
     {
         if (i - selectedIndexes.begin() + 1 > HMDB_QUERY_RESULT_OPENLINK_MAX)
         {
-            QMessageBox::warning(this, "Too many records selected",
-                                 QString("You have selected %1 records.\n"
+            QMessageBox::warning(this, tr("Too many records selected"),
+                                 QString(tr("You have selected %1 records.\n"
                                          "Only links to the first %2 records "
-                                         "will be opened.")
+                                         "will be opened."))
                                         .arg(selectedIndexes.count())
                                         .arg(HMDB_QUERY_RESULT_OPENLINK_MAX));
             break;
@@ -189,19 +189,20 @@ void FrameQueryResult::on_buttonSave_clicked()
 
     if (lastSavePathFilter.isEmpty())
         lastSavePathFilter = UCONFIG_EDITOR_FILE_SUFFIX_CSV;
-    QString fileName = QFileDialog::getSaveFileName(this,
-                                                    "Save query result as CSV",
-                                                    lastSavePath,
-                                                    filter,
-                                                    &lastSavePathFilter);
+    QString fileName =
+            QFileDialog::getSaveFileName(this,
+                                         tr("Save query result as CSV"),
+                                            lastSavePath,
+                                            filter,
+                                            &lastSavePathFilter);
     if (fileName.isEmpty())
         return;
 
     QFile f(fileName);
     if (!f.open(QFile::WriteOnly))
     {
-        QMessageBox::critical(this, "Failed writing to file",
-                              QString("Failed opening file %1 to write.")
+        QMessageBox::critical(this, tr("Failed writing to file"),
+                              QString(tr("Failed opening file %1 to write."))
                                      .arg(fileName));
         return;
     }

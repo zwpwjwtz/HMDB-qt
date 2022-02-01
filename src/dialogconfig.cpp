@@ -34,8 +34,8 @@ void DialogConfig::changeEvent(QEvent *e)
 void DialogConfig::on_buttonSetMainDatabase_clicked()
 {
     QString newDir = QFileDialog::getExistingDirectory(this,
-                                     "Select the main database directory "
-                                     "(containing metabolite info)",
+                                     tr("Select the main database directory "
+                                        "(containing metabolite info)"),
                                       ui->textMainDatabase->text());
     if (!newDir.isEmpty())
     {
@@ -47,8 +47,8 @@ void DialogConfig::on_buttonSetMainDatabase_clicked()
 void DialogConfig::on_buttonSetMSMSDatabase_clicked()
 {
     QString newDir = QFileDialog::getExistingDirectory(this,
-                                     "Select the MS/MS database directory "
-                                     "(containing MS/MS spectra)",
+                                     tr("Select the MS/MS database directory "
+                                        "(containing MS/MS spectra)"),
                                       ui->textMSMSDatabase->text());
     if (!newDir.isEmpty())
     {

@@ -42,10 +42,10 @@ bool ControlMassModificationList::loadList(bool reset, QString filename)
     {
         model.clear();
         model.setColumnCount(4);
-        model.setHorizontalHeaderItem(0, new QStandardItem("Enabled"));
-        model.setHorizontalHeaderItem(1, new QStandardItem("Mass"));
-        model.setHorizontalHeaderItem(2, new QStandardItem("Formula"));
-        model.setHorizontalHeaderItem(3, new QStandardItem("Description"));
+        model.setHorizontalHeaderItem(0, new QStandardItem(tr("Enabled")));
+        model.setHorizontalHeaderItem(1, new QStandardItem(tr("Mass")));
+        model.setHorizontalHeaderItem(2, new QStandardItem(tr("Formula")));
+        model.setHorizontalHeaderItem(3, new QStandardItem(tr("Description")));
         ui->viewMassModification->horizontalHeader()
                             ->setSectionResizeMode(QHeaderView::Interactive);
         ui->viewMassModification->horizontalHeader()
@@ -122,15 +122,16 @@ void ControlMassModificationList::onMenuLoadActionClicked(QAction* action)
             break;
         case HMDB_MASSMOD_MENU_INDEX_CUSTOM:
             newFilename = QFileDialog::getOpenFileName(this,
-                                 "Select a customized mass modificatin list",
-                                 massModificationListDir);
+                               tr("Select a customized mass modificatin list"),
+                               massModificationListDir);
             if (newFilename.isEmpty())
                 return;
             break;
         default:;
     }
-    if (QMessageBox::question(this, "Clear list content",
-                              "Clear current list before loading the new one?")
+    if (QMessageBox::question(this, tr("Clear list content"),
+                              tr("Clear current list before "
+                                 "loading the new one?"))
             == QMessageBox::Yes)
         loadList(true, newFilename);
     else
@@ -165,23 +166,23 @@ void ControlMassModificationList::on_buttonLoad_clicked()
     {
         menuLoadMassModification = new QMenu(this);
 
-        QAction* newAction = new QAction("Empty list", this);
+        QAction* newAction = new QAction(tr("Empty list"), this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_NULL);
         menuLoadMassModification->addAction(newAction);
 
         menuLoadMassModification->addSeparator();
 
-        newAction = new QAction("Default (Positive)", this);
+        newAction = new QAction(tr("Default (Positive)"), this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_POS);
         menuLoadMassModification->addAction(newAction);
 
-        newAction = new QAction("Default (Negative)", this);
+        newAction = new QAction(tr("Default (Negative)"), this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_NEG);
         menuLoadMassModification->addAction(newAction);
 
         menuLoadMassModification->addSeparator();
 
-        newAction = new QAction("Customized", this);
+        newAction = new QAction(tr("Customized"), this);
         newAction->setData(HMDB_MASSMOD_MENU_INDEX_CUSTOM);
         menuLoadMassModification->addAction(newAction);
 
@@ -194,7 +195,8 @@ void ControlMassModificationList::on_buttonLoad_clicked()
 void ControlMassModificationList::on_buttonSaveAs_clicked()
 {
     QString newFilename =
-            QFileDialog::getSaveFileName(this, "Save mass modification list as",
+            QFileDialog::getSaveFileName(this,
+                                         tr("Save mass modification list as"),
                                          massModificationListDir);
     if (!newFilename.isEmpty())
     {

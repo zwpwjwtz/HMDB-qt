@@ -50,16 +50,16 @@ bool DialogImport::startImport()
     }
     if (!importer->setSourceXML(ui->textImportFilename->text()))
     {
-        QMessageBox::critical(this, "Source file not accessible",
-                              "The selected source file is not readable. "
-                              "Please choose another one.");
+        QMessageBox::critical(this, tr("Source file not accessible"),
+                              tr("The selected source file is not readable. "
+                                 "Please choose another one."));
         return false;
     }
     if (!importer->setTargetDir(ui->textImportDirectory->text()))
     {
-        QMessageBox::critical(this, "Target directory not accessible",
-                              "The target directory is not writable. "
-                              "Please choose another one.");
+        QMessageBox::critical(this, tr("Target directory not accessible"),
+                              tr("The target directory is not writable. "
+                                 "Please choose another one."));
         return false;
     }
 
@@ -94,9 +94,9 @@ void DialogImport::done(int r)
     {
         if (importer && importer->isRunning())
         {
-            if (QMessageBox::warning(this, "Stop importing",
-                                     "An importing operation is going on. "
-                                     "Do you want to terminate it now?",
+            if (QMessageBox::warning(this, tr("Stop importing"),
+                                     tr("An importing operation is going on. "
+                                        "Do you want to terminate it now?"),
                                      QMessageBox::Yes | QMessageBox::No)
                     != QMessageBox::Yes)
                 return;
@@ -115,18 +115,18 @@ void DialogImport::onImporterFinished(bool successful)
 {
     if (successful)
     {
-        if (QMessageBox::information(this, "Finished importing",
-                                 "Importing succeeded. "
-                                 "Would you like to set the imported database "
-                                 "as default database for query?",
+        if (QMessageBox::information(this, tr("Finished importing"),
+                                 tr("Importing succeeded. "
+                                    "Would you like to set the imported "
+                                    "database as default database for query?"),
                                  QMessageBox::Yes | QMessageBox::No,
                                  QMessageBox::Yes)
                 == QMessageBox::Yes)
             appConfig.setMainDatabase(ui->textImportDirectory->text());
     }
     else
-        QMessageBox::critical(this, "Import failed",
-                              "An error occurred during import.");
+        QMessageBox::critical(this, tr("Import failed"),
+                              tr("An error occurred during import."));
     next();
     button(QWizard::BackButton)->setEnabled(false);
 }
@@ -135,7 +135,7 @@ void DialogImport::on_buttonChooseFile_clicked()
 {
     QString fileName;
 
-    fileName = QFileDialog::getOpenFileName(this, "Choose a XML file");
+    fileName = QFileDialog::getOpenFileName(this, tr("Choose a XML file"));
     if (fileName.isEmpty())
         return;
 
@@ -146,7 +146,7 @@ void DialogImport::on_buttonChooseDir_clicked()
 {
     QString dirName;
 
-    dirName = QFileDialog::getExistingDirectory(this, "Choose a directory");
+    dirName = QFileDialog::getExistingDirectory(this, tr("Choose a directory"));
     if (dirName.isEmpty())
         return;
 

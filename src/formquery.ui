@@ -145,7 +145,7 @@
                <item>
                 <widget class="QRadioButton" name="radioAvgMass">
                  <property name="text">
-                  <string>A&amp;verage mass</string>
+                  <string>&amp;Average mass</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -220,7 +220,7 @@
                <item>
                 <widget class="QLineEdit" name="textMassTolerance">
                  <property name="text">
-                  <string>100</string>
+                  <string notr="true">100</string>
                  </property>
                 </widget>
                </item>
@@ -266,7 +266,7 @@
                   <item>
                    <widget class="QRadioButton" name="radioMSMSFromFile">
                     <property name="text">
-                     <string>Fro&amp;m file:</string>
+                     <string>From &amp;file:</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -288,7 +288,7 @@
                 <item>
                  <widget class="QRadioButton" name="radioMSMSFromInput">
                   <property name="text">
-                   <string>From inp&amp;ut:</string>
+                   <string>From &amp;input:</string>
                   </property>
                  </widget>
                 </item>

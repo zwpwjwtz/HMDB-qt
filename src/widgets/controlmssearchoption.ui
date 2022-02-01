@@ -26,7 +26,7 @@
      <item>
       <widget class="QRadioButton" name="radioPositiveIon">
        <property name="text">
-        <string>Positi&amp;ve ionization</string>
+        <string>&amp;Positive ionization</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -61,14 +61,14 @@
       <item>
        <widget class="QLineEdit" name="textMassTolerance">
         <property name="text">
-         <string>1000</string>
+         <string notr="true">1000</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="radioAbsoluteTolerance">
         <property name="text">
-         <string>Absol&amp;ute (Da)</string>
+         <string>&amp;Absolute (Da)</string>
         </property>
        </widget>
       </item>

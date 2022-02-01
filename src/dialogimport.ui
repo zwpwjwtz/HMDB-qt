@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Wizard</string>
+   <string>Import Wizard</string>
   </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -35,12 +35,56 @@
       <item>
        <widget class="QLabel" name="labelChooseFile">
         <property name="text">
-         <string>Please choose the XML file from hmdb.ca:</string>
+         <string>Please choose the XML file from &lt;a href=&quot;https://hmdb.ca/downloads&quot;&gt;hmdb.ca&lt;/a&gt;:</string>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="maximumSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="pixmap">
+           <pixmap resource="resource.qrc">:/icons/help-about.png</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelChooseFileRemark">
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Cmpressed files  (.gz, .zip) need to be extracted first before importing</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_1">
+        <property name="topMargin">
+         <number>5</number>
+        </property>
         <item>
          <widget class="QLineEdit" name="textImportFilename"/>
         </item>
@@ -251,6 +295,8 @@
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

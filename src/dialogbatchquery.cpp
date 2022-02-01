@@ -50,8 +50,8 @@ bool DialogBatchQuery::validateCurrentPage()
         case PageQueryType:
             if (ui->textDatabase->text().isEmpty())
             {
-                QMessageBox::warning(this, "Missing database",
-                                     "Please select a database for query.");
+                QMessageBox::warning(this, tr("Missing database"),
+                                     tr("Please select a database for query."));
                 ui->textDatabase->setFocus();
                 return false;
             }
@@ -59,15 +59,15 @@ bool DialogBatchQuery::validateCurrentPage()
         case PageSelectFile:
             if (ui->textSourcePath->text().isEmpty())
             {
-                QMessageBox::warning(this, "Missing fields",
-                                     "Please select a source data file.");
+                QMessageBox::warning(this, tr("Missing fields"),
+                                     tr("Please select a source data file."));
                 ui->textSourcePath->setFocus();
                 return false;
             }
             if (ui->textTargetPath->text().isEmpty())
             {
-                QMessageBox::warning(this, "Missing fields",
-                                     "Please select a target file.");
+                QMessageBox::warning(this, tr("Missing fields"),
+                                     tr("Please select a target file."));
                 ui->textTargetPath->setFocus();
                 return false;
             }
@@ -82,9 +82,9 @@ bool DialogBatchQuery::validateCurrentPage()
             }
             if (checkedRowCount == 0)
             {
-                QMessageBox::warning(this, "No query field selected",
-                                     "Please select at least one field to "
-                                     "perform the query.");
+                QMessageBox::warning(this, tr("No query field selected"),
+                                     tr("Please select at least one field to "
+                                        "perform the query."));
                 return false;
             }
             break;
@@ -100,9 +100,9 @@ void DialogBatchQuery::done(int r)
     {
         if (searchEngine && searchEngine->isRunning())
         {
-            if (QMessageBox::warning(this, "Stop running tasks",
-                                     "A query is being processed. "
-                                     "Do you want to terminate it now?",
+            if (QMessageBox::warning(this, tr("Stop running tasks"),
+                                     tr("A query is being processed. "
+                                        "Do you want to terminate it now?"),
                                      QMessageBox::Yes | QMessageBox::No)
                     != QMessageBox::Yes)
                 return;
@@ -119,9 +119,9 @@ void DialogBatchQuery::resetQueryFields()
     QStandardItemModel& model = modelQueryFields;
     model.clear();
     model.setColumnCount(3);
-    model.setHorizontalHeaderItem(0, new QStandardItem("Enabled"));
-    model.setHorizontalHeaderItem(1, new QStandardItem("Field Name"));
-    model.setHorizontalHeaderItem(2, new QStandardItem("Field ID"));
+    model.setHorizontalHeaderItem(0, new QStandardItem(tr("Enabled")));
+    model.setHorizontalHeaderItem(1, new QStandardItem(tr("Field Name")));
+    model.setHorizontalHeaderItem(2, new QStandardItem(tr("Field ID")));
 
     // Define some default fields
     QFile resource(":/resource/HMDB-Fields.csv");
@@ -209,9 +209,9 @@ bool DialogBatchQuery::launchQuery()
             ui->textMassTolerance->text().toDouble(&conversionOK);
             if (!conversionOK)
             {
-                QMessageBox::warning(this, "Invalid mass tolerance value",
-                                     "Please input a numeric value for the "
-                                     "mass tolerance.");
+                QMessageBox::warning(this, tr("Invalid mass tolerance value"),
+                                     tr("Please input a numeric value for the "
+                                        "mass tolerance."));
                 return false;
             }
 
@@ -286,7 +286,7 @@ void DialogBatchQuery::on_buttonSelectSourcePath_clicked()
 {
     QString fileName;
 
-    fileName = QFileDialog::getOpenFileName(this, "Choose a data file");
+    fileName = QFileDialog::getOpenFileName(this, tr("Choose a data file"));
     if (fileName.isEmpty())
         return;
 
@@ -308,7 +308,7 @@ void DialogBatchQuery::on_buttonSelectTargetPath_clicked()
 {
     QString fileName;
 
-    fileName = QFileDialog::getOpenFileName(this, "Choose a target file");
+    fileName = QFileDialog::getOpenFileName(this, tr("Choose a target file"));
     if (fileName.isEmpty())
         return;
 
@@ -331,9 +331,10 @@ void DialogBatchQuery::on_DialogBatchQuery_currentIdChanged(int id)
         case PageQueryFinished:
             button(QWizard::BackButton)->setEnabled(false);
             if (lastQuerySuccessful)
-                ui->labelQueryResult->setText("Query completed successfully.");
+                ui->labelQueryResult->setText(
+                                          tr("Query completed successfully."));
             else
-                ui->labelQueryResult->setText("Something went wrong.");
+                ui->labelQueryResult->setText(tr("Something went wrong."));
             break;
         default:;
     }
@@ -342,7 +343,7 @@ void DialogBatchQuery::on_DialogBatchQuery_currentIdChanged(int id)
 void DialogBatchQuery::on_buttonSelectDatabase_clicked()
 {
     QString newDir = QFileDialog::getExistingDirectory(this,
-                                              "Select a database directory",
+                                              tr("Select a database directory"),
                                               dataDir);
     if (!newDir.isEmpty())
         ui->textDatabase->setText(newDir);

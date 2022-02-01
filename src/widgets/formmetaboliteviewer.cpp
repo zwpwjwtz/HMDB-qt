@@ -49,9 +49,9 @@ bool FormMetaboliteViewer::showMetabolite(const QString& ID)
     QString dataPath = appConfig.mainDatabase();
     if (dataPath.isEmpty())
     {
-        QMessageBox::critical(this, "Database not set",
-                              "Please configure the path to the "
-                              "main database first.");
+        QMessageBox::critical(this, tr("Database not set"),
+                              tr("Please configure the path to the "
+                                 "main database first."));
         return false;
     }
 
@@ -257,8 +257,9 @@ void FormMetaboliteViewer::on_treeView_doubleClicked(const QModelIndex& index)
         QModelIndex subentryIndex = index.model()->index(0, 0, index);
         if (!subentryIndex.data().toString().contains(HMDBXML_ENTRY_VALUE_MSMS))
         {
-            QMessageBox::information(this, "Spectrum not support",
-                                     "Spectrum type not supported by viewer.");
+            QMessageBox::information(this, tr("Spectrum not support"),
+                                     tr("Spectrum type not supported "
+                                        "by the viewer."));
             return;
         }
 
@@ -272,9 +273,9 @@ void FormMetaboliteViewer::on_treeView_doubleClicked(const QModelIndex& index)
         QString msmsDataPath = appConfig.msmsDatabase();
         if (msmsDataPath.isEmpty())
         {
-            QMessageBox::critical(this, "MS/MS database not set",
-                                  "Please configure the path to the "
-                                  "MS/MS database first.");
+            QMessageBox::critical(this, tr("MS/MS database not set"),
+                                  tr("Please configure the path to the "
+                                     "MS/MS database first."));
             return;
         }
 
@@ -286,10 +287,10 @@ void FormMetaboliteViewer::on_treeView_doubleClicked(const QModelIndex& index)
         QString metaboliteID(IDList[ui->tabWidget->currentIndex()]);
         if (!spectrumView->load(metaboliteID, spectrumID))
         {
-            QMessageBox::information(this, "Spectrum not exists",
-                                     QString("The data file of the spectrum "
+            QMessageBox::information(this, tr("Spectrum not exists"),
+                                     QString(tr("The data file of the spectrum "
                                              "(ID %1) cannot be found. \n"
-                                             "Please check your database.")
+                                             "Please check your database."))
                                             .arg(spectrumID));
             return;
         }

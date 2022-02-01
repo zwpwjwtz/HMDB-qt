@@ -81,9 +81,9 @@ bool FormQuery::connectDatabase()
     }
     if (database->isRunning())
     {
-        QMessageBox::warning(this, "Pending task",
-                             "An operation is going on. "
-                             "Please wait until it is finished.");
+        QMessageBox::warning(this, tr("Pending task"),
+                             tr("An operation is going on. "
+                                "Please wait until it is finished."));
         return false;
     }
     return true;
@@ -94,10 +94,10 @@ bool FormQuery::checkDatabase()
     QString dataDir = appConfig.mainDatabase();
     if (dataDir.isEmpty())
     {
-        QMessageBox::critical(this, "Database not set",
-                              "No database set yet. "
-                              "Please choose the location for a imported database." 
-                              );
+        QMessageBox::critical(this, tr("Database not set"),
+                              tr("No database set yet. "
+                                 "Please choose the location for "
+                                 "a imported database." ));
         dialogConfig->exec();
         dataDir = appConfig.mainDatabase();
     }
@@ -108,9 +108,10 @@ bool FormQuery::checkDatabase()
     database->setDataDirectory(dataDir, HmdbQuery::DatabaseType::Main);
     if (!database->isReady(HmdbQuery::DatabaseType::Main))
     {
-        if (QMessageBox::question(this, "Database not indexed",
-                                  "The index for HMDB has not been built yet. \n"
-                                  "Do you want to build it now?")
+        if (QMessageBox::question(this, tr("Database not indexed"),
+                                  tr("The index for the main database "
+                                     "has not been built yet. \n"
+                                     "Do you want to build it now?"))
                 == QMessageBox::Yes)
         {
             showBuildingIndexStart();
@@ -127,10 +128,10 @@ bool FormQuery::checkMSMSDatabase()
     QString dataDir = appConfig.msmsDatabase();
     if (dataDir.isEmpty())
     {
-        QMessageBox::critical(this, "MS/MS Database not set",
-                              "No MS/MS database set yet. "
-                              "Please choose the location for a imported database."
-                              );
+        QMessageBox::critical(this, tr("MS/MS Database not set"),
+                              tr("No MS/MS database set yet. "
+                                 "Please choose the location for "
+                                 "a MS/MS database from HMDB."));
         dialogConfig->exec();
         dataDir = appConfig.msmsDatabase();
     }
@@ -141,10 +142,10 @@ bool FormQuery::checkMSMSDatabase()
     database->setDataDirectory(dataDir, HmdbQuery::DatabaseType::MSMS);
     if (!database->isReady(HmdbQuery::DatabaseType::MSMS))
     {
-        if (QMessageBox::question(this, "Database not indexed",
-                                  "The index for the MS/MS database "
-                                  "has not been built yet. \n"
-                                  "Do you want to build it now?")
+        if (QMessageBox::question(this, tr("Database not indexed"),
+                                  tr("The index for the MS/MS database "
+                                     "has not been built yet. \n"
+                                     "Do you want to build it now?"))
                 == QMessageBox::Yes)
         {
             showBuildingIndexStart();
@@ -158,7 +159,7 @@ bool FormQuery::checkMSMSDatabase()
 
 void FormQuery::showBuildingIndexStart()
 {
-    ui->labelStatus->setText("Building database indexes, please wait...");
+    ui->labelStatus->setText(tr("Building database indexes, please wait..."));
     ui->progressQuery->setRange(0, 0);
     ui->progressQuery->show();
 }
@@ -300,7 +301,7 @@ bool FormQuery::parsePeakList (QByteArray content,
 void FormQuery::onDatabaseReady()
 {
     ui->progressQuery->hide();
-    ui->labelStatus->setText("Database ready.");
+    ui->labelStatus->setText(tr("Database ready."));
 }
 
 void FormQuery::onFieldListRequested()
@@ -330,8 +331,8 @@ void FormQuery::onQueryFinished(bool successful)
     else
     {
         ui->labelStatus->clear();
-        QMessageBox::critical(this, "Query failed",
-                              "An error occurred during query.");
+        QMessageBox::critical(this, tr("Query failed"),
+                              tr("An error occurred during query."));
     }
     ui->progressQuery->hide();
 }
@@ -374,16 +375,16 @@ void FormQuery::on_buttonQueryMass_clicked()
     double mass = ui->textMass->text().toDouble(&conversionOK);
     if (!conversionOK)
     {
-        QMessageBox::warning(this, "Invalid mass value",
-                             "Please input a numeric mass value!");
+        QMessageBox::warning(this, tr("Invalid mass value"),
+                             tr("Please input a numeric mass value!"));
         return;
     }
 
     double delta = ui->textMassTolerance->text().toDouble(&conversionOK);
     if (!conversionOK)
     {
-        QMessageBox::warning(this, "Invalid tolerance value",
-                             "Please input a numeric tolerance value!");
+        QMessageBox::warning(this, tr("Invalid tolerance value"),
+                             tr("Please input a numeric tolerance value!"));
         return;
     }
     if (ui->checkRelativeTolerance->isChecked())
@@ -419,9 +420,10 @@ void FormQuery::on_buttonQueryName_clicked()
 
 void FormQuery::on_buttonSelectMSMSFile_clicked()
 {
-    QString newFile = QFileDialog::getOpenFileName(this,
-                                               "Select a mass spectrum file",
-                                                msmsFilePath);
+    QString newFile =
+            QFileDialog::getOpenFileName(this,
+                                         tr("Select a mass spectrum file"),
+                                         msmsFilePath);
     if (newFile.isEmpty())
         return;
     msmsFilePath = newFile;
@@ -454,9 +456,9 @@ void FormQuery::on_buttonQueryMSMS_clicked()
         QFile msPeakFile(ui->textMSMSFile->text());
         if (!msPeakFile.open(QFile::ReadOnly))
         {
-            QMessageBox::critical(this, "Input file not accessible",
-                                  "The spectrum file for MS/MS search is not "
-                                  "readable. Please select another one.");
+            QMessageBox::critical(this, tr("Input file not accessible"),
+                                  tr("The spectrum file for MS/MS search is not"
+                                     " readable. Please select another one."));
             return;
         }
         parsePeakList(msPeakFile.readAll(), mzList, intensityList);
@@ -466,8 +468,9 @@ void FormQuery::on_buttonQueryMSMS_clicked()
                       mzList, intensityList);
     if (mzList.length() < 1)
     {
-        QMessageBox::warning(this, "No peak in the spectrum",
-                             "No peak (m/z value) found in the give spectrum.");
+        QMessageBox::warning(this, tr("No peak in the spectrum"),
+                             tr("No peak (m/z value) was found "
+                                "in the give spectrum."));
         return;
     }
 
