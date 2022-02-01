@@ -263,7 +263,7 @@ void FormMetaboliteViewer::on_treeView_doubleClicked(const QModelIndex& index)
             return;
         }
 
-        subentryIndex = subentryIndex.siblingAtRow(1);
+        subentryIndex = index.model()->index(1, 0, index);
         QString spectrumID = subentryIndex.data().toString();
         spectrumID =
             spectrumID.mid(spectrumID.indexOf(HMDBXML_ENTRY_PROP_SPECTRUMID) +

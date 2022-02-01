@@ -657,12 +657,12 @@ Please check your database.</source>
     <message>
         <location filename="../formquery.ui" line="148"/>
         <source>&amp;Average mass</source>
-        <translation>平均质量（&amp;A）</translation>
+        <translation>平均质量(&amp;A)</translation>
     </message>
     <message>
         <location filename="../formquery.ui" line="269"/>
         <source>From &amp;file:</source>
-        <translation>从文件中导入(&amp;F)：</translation>
+        <translation>导入文件(&amp;F)：</translation>
     </message>
     <message>
         <location filename="../formquery.ui" line="291"/>
@@ -672,7 +672,7 @@ Please check your database.</source>
     <message>
         <location filename="../formquery.ui" line="158"/>
         <source>&amp;Monoisotopic mass</source>
-        <translation>单一同位素质量（&amp;M）</translation>
+        <translation>单一同位素质量(&amp;M)</translation>
     </message>
     <message>
         <location filename="../formquery.ui" line="194"/>

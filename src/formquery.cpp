@@ -261,14 +261,19 @@ bool FormQuery::parsePeakList (QByteArray content,
         buffer = content.mid(pos1, pos2 - pos1);
         pos1 = pos2 + 1;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+        Qt::SplitBehavior splitMode = Qt::SkipEmptyParts;
+#else
+        QString::SplitBehavior splitMode = QString::SkipEmptyParts;
+#endif
         if (buffer.contains('\t'))
-            fieldList = buffer.split('\t', Qt::SkipEmptyParts);
+            fieldList = buffer.split('\t', splitMode);
         else if (buffer.contains(','))
-            fieldList = buffer.split(',', Qt::SkipEmptyParts);
+            fieldList = buffer.split(',', splitMode);
         else if (buffer.contains(';'))
-            fieldList = buffer.split(';', Qt::SkipEmptyParts);
+            fieldList = buffer.split(';', splitMode);
         else
-            fieldList = buffer.split(' ', Qt::SkipEmptyParts);
+            fieldList = buffer.split(' ', splitMode);
         if (fieldList.length() < 1)
             continue;
 

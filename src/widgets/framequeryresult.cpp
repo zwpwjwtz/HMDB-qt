@@ -172,7 +172,7 @@ void FrameQueryResult::on_buttonOpenLink_clicked()
             break;
         }
 
-        recordID = i->siblingAtColumn(0).data().toString();
+        recordID = i->model()->data(i->model()->index(i->row(), 0)).toString();
         if (!recordID.isEmpty())
         {
             QDesktopServices::openUrl(
@@ -246,7 +246,9 @@ void
 FrameQueryResult::on_viewSearchResult_doubleClicked(const QModelIndex& index)
 {
     if (index.isValid())
-        emit showDetailsRequested(index.siblingAtColumn(0).data().toString());
+        emit showDetailsRequested(
+                modelResultProxy->data(modelResultProxy->index(index.row(), 0))
+                                .toString());
 }
 
 void FrameQueryResult::on_buttonView_clicked()
@@ -254,5 +256,7 @@ void FrameQueryResult::on_buttonView_clicked()
     QModelIndexList selectedIndexes =
                     ui->viewSearchResult->selectionModel()->selectedIndexes();
     for (auto i=selectedIndexes.begin(); i!=selectedIndexes.end(); i++)
-        emit showDetailsRequested(i->siblingAtColumn(0).data().toString());
+        emit showDetailsRequested(
+                modelResultProxy->data(modelResultProxy->index(i->row(), 0))
+                                .toString());
 }
